@@ -1,0 +1,996 @@
+{
+    "AirflowNetwork:MultiZone:Component:SimpleOpening": {
+        "SimpleOpening": {
+            "air_mass_flow_coefficient_when_opening_is_closed": 0.001,
+            "air_mass_flow_exponent_when_opening_is_closed": 0.65,
+            "discharge_coefficient": 1,
+            "minimum_density_difference_for_two_way_flow": 0.0001
+        }
+    },
+    "AirflowNetwork:MultiZone:Surface": {
+        "AirflowNetwork:MultiZone:Surface 1": {
+            "equivalent_rectangle_aspect_ratio": 1,
+            "equivalent_rectangle_method": "PolygonHeight",
+            "indoor_and_outdoor_enthalpy_difference_upper_limit_for_minimum_venting_open_factor": 300000,
+            "indoor_and_outdoor_temperature_difference_upper_limit_for_minimum_venting_open_factor": 100,
+            "leakage_component_name": "SimpleOpening",
+            "surface_name": "Zn001:Wall001:Win001",
+            "ventilation_control_mode": "Constant",
+            "venting_availability_schedule_name": "VentN_Control",
+            "window_door_opening_factor_or_crack_factor": 1
+        },
+        "AirflowNetwork:MultiZone:Surface 2": {
+            "equivalent_rectangle_aspect_ratio": 1,
+            "equivalent_rectangle_method": "PolygonHeight",
+            "indoor_and_outdoor_enthalpy_difference_upper_limit_for_minimum_venting_open_factor": 300000,
+            "indoor_and_outdoor_temperature_difference_upper_limit_for_minimum_venting_open_factor": 100,
+            "leakage_component_name": "SimpleOpening",
+            "surface_name": "Zn001:Wall002:Win001",
+            "ventilation_control_mode": "Constant",
+            "venting_availability_schedule_name": "VentS_Control",
+            "window_door_opening_factor_or_crack_factor": 1
+        }
+    },
+    "AirflowNetwork:MultiZone:Zone": {
+        "AirflowNetwork:MultiZone:Zone 1": {
+            "facade_width": 10,
+            "indoor_and_outdoor_enthalpy_difference_upper_limit_for_minimum_venting_open_factor": 300000,
+            "indoor_and_outdoor_temperature_difference_upper_limit_for_minimum_venting_open_factor": 100,
+            "single_sided_wind_pressure_coefficient_algorithm": "Standard",
+            "ventilation_control_mode": "Constant",
+            "zone_name": "Thermal Zone: Modelo_Simple"
+        }
+    },
+    "AirflowNetwork:SimulationControl": {
+        "Flujo_Control": {
+            "absolute_airflow_convergence_tolerance": 1e-06,
+            "airflownetwork_control": "NoMultizoneOrDistribution",
+            "building_type": "LowRise",
+            "convergence_acceleration_limit": -0.5,
+            "height_dependence_of_external_node_temperature": "No",
+            "initialization_type": "ZeroNodePressures",
+            "maximum_number_of_iterations": 500,
+            "ratio_of_building_width_along_short_axis_to_width_along_long_axis": 1,
+            "relative_airflow_convergence_tolerance": 0.0001,
+            "solver": "SkylineLU",
+            "wind_pressure_coefficient_type": "SurfaceAverageCalculation"
+        }
+    },
+    "Building": {
+        "Building 1": {
+            "loads_convergence_tolerance_value": 0.04,
+            "maximum_number_of_warmup_days": 25,
+            "minimum_number_of_warmup_days": 3,
+            "north_axis": 0,
+            "solar_distribution": "FullInteriorAndExteriorWithReflections",
+            "temperature_convergence_tolerance_value": 0.4,
+            "terrain": "City"
+        }
+    },
+    "BuildingSurface:Detailed": {
+        "MURO_ESTE": {
+            "construction_name": "Muros",
+            "outside_boundary_condition": "Outdoors",
+            "sun_exposure": "SunExposed",
+            "surface_type": "Wall",
+            "vertices": [
+                {
+                    "vertex_x_coordinate": 5,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 2.5
+                },
+                {
+                    "vertex_x_coordinate": 5,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 5,
+                    "vertex_y_coordinate": 5,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 5,
+                    "vertex_y_coordinate": 5,
+                    "vertex_z_coordinate": 2.5
+                }
+            ],
+            "wind_exposure": "WindExposed",
+            "zone_name": "Thermal Zone: Modelo_Simple"
+        },
+        "MURO_NORTE": {
+            "construction_name": "Muros",
+            "outside_boundary_condition": "Outdoors",
+            "sun_exposure": "SunExposed",
+            "surface_type": "Wall",
+            "vertices": [
+                {
+                    "vertex_x_coordinate": 5,
+                    "vertex_y_coordinate": 5,
+                    "vertex_z_coordinate": 2.5
+                },
+                {
+                    "vertex_x_coordinate": 5,
+                    "vertex_y_coordinate": 5,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 5,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 5,
+                    "vertex_z_coordinate": 2.5
+                }
+            ],
+            "wind_exposure": "WindExposed",
+            "zone_name": "Thermal Zone: Modelo_Simple"
+        },
+        "MURO_OESTE": {
+            "construction_name": "Muros",
+            "outside_boundary_condition": "Outdoors",
+            "sun_exposure": "SunExposed",
+            "surface_type": "Wall",
+            "vertices": [
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 5,
+                    "vertex_z_coordinate": 2.5
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 5,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 2.5
+                }
+            ],
+            "wind_exposure": "WindExposed",
+            "zone_name": "Thermal Zone: Modelo_Simple"
+        },
+        "MURO_SUR": {
+            "construction_name": "Muros",
+            "outside_boundary_condition": "Outdoors",
+            "sun_exposure": "SunExposed",
+            "surface_type": "Wall",
+            "vertices": [
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 2.5
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 5,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 5,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 2.5
+                }
+            ],
+            "wind_exposure": "WindExposed",
+            "zone_name": "Thermal Zone: Modelo_Simple"
+        },
+        "PISO": {
+            "construction_name": "Piso",
+            "outside_boundary_condition": "Ground",
+            "sun_exposure": "NoSun",
+            "surface_type": "Floor",
+            "vertices": [
+                {
+                    "vertex_x_coordinate": 5,
+                    "vertex_y_coordinate": 5,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 5,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 5,
+                    "vertex_z_coordinate": 0
+                }
+            ],
+            "wind_exposure": "NoWind",
+            "zone_name": "Thermal Zone: Modelo_Simple"
+        },
+        "TECHO": {
+            "construction_name": "Techo",
+            "outside_boundary_condition": "Outdoors",
+            "sun_exposure": "SunExposed",
+            "surface_type": "Roof",
+            "vertices": [
+                {
+                    "vertex_x_coordinate": 5,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 2.5
+                },
+                {
+                    "vertex_x_coordinate": 5,
+                    "vertex_y_coordinate": 5,
+                    "vertex_z_coordinate": 2.5
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 5,
+                    "vertex_z_coordinate": 2.5
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 2.5
+                }
+            ],
+            "wind_exposure": "WindExposed",
+            "zone_name": "Thermal Zone: Modelo_Simple"
+        }
+    },
+    "Construction": {
+        "Muros": {
+            "layer_2": "Ladrillo",
+            "layer_3": "Rev_int",
+            "outside_layer": "Rev_ext"
+        },
+        "Piso": {
+            "layer_2": "Piso_Madera",
+            "outside_layer": "Contrapiso"
+        },
+        "Techo": {
+            "layer_2": "Poliestireno_5cm",
+            "layer_3": "LosaHA",
+            "outside_layer": "Membrana_Gtxt"
+        },
+        "Ventana": {
+            "outside_layer": "Clear 3mm"
+        },
+        "Ventana_Sombra": {
+            "layer_2": "Clear 3mm",
+            "outside_layer": "Window Material Blind 1"
+        }
+    },
+    "FenestrationSurface:Detailed": {
+        "Zn001:Wall001:Win001": {
+            "building_surface_name": "MURO_NORTE",
+            "construction_name": "Ventana",
+            "surface_type": "Window",
+            "vertex_1_x_coordinate": 3.5,
+            "vertex_1_y_coordinate": 5,
+            "vertex_1_z_coordinate": 2,
+            "vertex_2_x_coordinate": 3.5,
+            "vertex_2_y_coordinate": 5,
+            "vertex_2_z_coordinate": 0.5,
+            "vertex_3_x_coordinate": 1.5,
+            "vertex_3_y_coordinate": 5,
+            "vertex_3_z_coordinate": 0.5,
+            "vertex_4_x_coordinate": 1.5,
+            "vertex_4_y_coordinate": 5,
+            "vertex_4_z_coordinate": 2
+        },
+        "Zn001:Wall002:Win001": {
+            "building_surface_name": "MURO_SUR",
+            "construction_name": "Ventana",
+            "surface_type": "Window",
+            "vertex_1_x_coordinate": 2,
+            "vertex_1_y_coordinate": 0,
+            "vertex_1_z_coordinate": 2,
+            "vertex_2_x_coordinate": 2,
+            "vertex_2_y_coordinate": 0,
+            "vertex_2_z_coordinate": 1,
+            "vertex_3_x_coordinate": 3,
+            "vertex_3_y_coordinate": 0,
+            "vertex_3_z_coordinate": 1,
+            "vertex_4_x_coordinate": 3,
+            "vertex_4_y_coordinate": 0,
+            "vertex_4_z_coordinate": 2
+        }
+    },
+    "GlobalGeometryRules": {
+        "GlobalGeometryRules 1": {
+            "coordinate_system": "Relative",
+            "daylighting_reference_point_coordinate_system": "Relative",
+            "rectangular_surface_coordinate_system": "Relative",
+            "starting_vertex_position": "UpperLeftCorner",
+            "vertex_entry_direction": "Counterclockwise"
+        }
+    },
+    "HeatBalanceAlgorithm": {
+        "HeatBalanceAlgorithm 1": {
+            "algorithm": "ConductionTransferFunction",
+            "maximum_surface_convection_heat_transfer_coefficient_value": 1000,
+            "minimum_surface_convection_heat_transfer_coefficient_value": 0.1,
+            "surface_temperature_upper_limit": 200
+        }
+    },
+    "Material": {
+        "Contrapiso": {
+            "conductivity": 1.16,
+            "density": 2000,
+            "roughness": "Rough",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1000,
+            "thermal_absorptance": 0.93,
+            "thickness": 0.02,
+            "visible_absorptance": 0.7
+        },
+        "Ladrillo": {
+            "conductivity": 0.91,
+            "density": 1800,
+            "roughness": "MediumRough",
+            "solar_absorptance": 0.3,
+            "specific_heat": 880,
+            "thermal_absorptance": 0.9,
+            "thickness": 0.16,
+            "visible_absorptance": 0.3
+        },
+        "LosaHA": {
+            "conductivity": 1.16,
+            "density": 2000,
+            "roughness": "Rough",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1000,
+            "thermal_absorptance": 0.93,
+            "thickness": 0.18,
+            "visible_absorptance": 0.7
+        },
+        "Membrana_Gtxt": {
+            "conductivity": 0.17,
+            "density": 1200,
+            "roughness": "Smooth",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1670,
+            "thermal_absorptance": 0.9,
+            "thickness": 0.005,
+            "visible_absorptance": 0.7
+        },
+        "Piso_Madera": {
+            "conductivity": 0.34,
+            "density": 1200,
+            "roughness": "MediumSmooth",
+            "solar_absorptance": 0.7,
+            "specific_heat": 1380,
+            "thermal_absorptance": 0.9,
+            "thickness": 0.02,
+            "visible_absorptance": 0.7
+        },
+        "Poliestireno_5cm": {
+            "conductivity": 0.035,
+            "density": 20,
+            "roughness": "VerySmooth",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1674,
+            "thermal_absorptance": 0.9,
+            "thickness": 0.05,
+            "visible_absorptance": 0.3
+        },
+        "Rev_ext": {
+            "conductivity": 1.16,
+            "density": 1900,
+            "roughness": "Rough",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1050,
+            "thermal_absorptance": 0.93,
+            "thickness": 0.025,
+            "visible_absorptance": 0.7
+        },
+        "Rev_int": {
+            "conductivity": 0.93,
+            "density": 1900,
+            "roughness": "Rough",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1050,
+            "thermal_absorptance": 0.93,
+            "thickness": 0.025,
+            "visible_absorptance": 0.7
+        }
+    },
+    "NodeList": {
+        "ZoneInlets": {
+            "nodes": [
+                {
+                    "node_name": "NODE 1"
+                }
+            ]
+        }
+    },
+    "OutdoorAir:Node": {
+        "Model Outdoor Air Node": {}
+    },
+    "Output:EnergyManagementSystem": {
+        "Output:EnergyManagementSystem 1": {
+            "actuator_availability_dictionary_reporting": "Verbose",
+            "ems_runtime_language_debug_output_level": "Verbose",
+            "internal_variable_availability_dictionary_reporting": "Verbose"
+        }
+    },
+    "Output:JSON": {
+        "Output:JSON 1": {
+            "option_type": "TimeSeries",
+            "output_cbor": "No",
+            "output_json": "Yes",
+            "output_messagepack": "No"
+        }
+    },
+    "Output:Meter": {
+        "Output:Meter 1": {
+            "key_name": "Cooling:DistrictCooling",
+            "reporting_frequency": "Timestep"
+        },
+        "Output:Meter 2": {
+            "key_name": "Cooling:EnergyTransfer",
+            "reporting_frequency": "Timestep"
+        }
+    },
+    "Output:Table:SummaryReports": {
+        "Output:Table:SummaryReports 1": {
+            "reports": [
+                {
+                    "report_name": "AllSummary"
+                }
+            ]
+        }
+    },
+    "Output:Variable": {
+        "Output:Variable 1": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Site Wind Speed"
+        },
+        "Output:Variable 2": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Site Wind Direction"
+        },
+        "Output:Variable 3": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Site Outdoor Air Relative Humidity"
+        },
+        "Output:Variable 4": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone Air Relative Humidity"
+        },
+        "Output:Variable 5": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone Mean Air Temperature"
+        },
+        "Output:Variable 6": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Outside Face Incident Solar Radiation Rate per Area"
+        },
+        "Output:Variable 7": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Shading Device Is On Time Fraction"
+        },
+        "Output:Variable 8": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window Blind Slat Angle"
+        },
+        "Output:Variable 9": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window Transmitted Solar Radiation Rate"
+        },
+        "Output:Variable 10": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window Total Glazing Layers Absorbed Solar Radiation Rate"
+        },
+        "Output:Variable 11": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window Heat Gain Rate"
+        },
+        "Output:Variable 12": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window Heat Loss Rate"
+        },
+        "Output:Variable 13": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window Shading Device Absorbed Solar Radiation Rate"
+        },
+        "Output:Variable 14": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window System Solar Transmittance"
+        },
+        "Output:Variable 15": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window System Solar Reflectance"
+        },
+        "Output:Variable 16": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window System Solar Absorptance"
+        },
+        "Output:Variable 17": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone Air System Sensible Cooling Rate"
+        },
+        "Output:Variable 18": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone Air System Sensible Heating Rate"
+        },
+        "Output:Variable 19": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone Air Temperature"
+        },
+        "Output:Variable 20": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone Air Humidity Ratio"
+        },
+        "Output:Variable 21": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window Transmitted Solar Radiation Energy"
+        },
+        "Output:Variable 22": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window Transmitted Beam Solar Radiation Energy"
+        },
+        "Output:Variable 23": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window Transmitted Diffuse Solar Radiation Energy"
+        },
+        "Output:Variable 24": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window Heat Gain Energy"
+        },
+        "Output:Variable 25": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window Heat Loss Energy"
+        },
+        "Output:Variable 26": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Site Outdoor Air Drybulb Temperature"
+        }
+    },
+    "Output:VariableDictionary": {
+        "Output:VariableDictionary 1": {
+            "key_field": "IDF"
+        }
+    },
+    "OutputControl:Table:Style": {
+        "OutputControl:Table:Style 1": {
+            "column_separator": "CommaAndHTML"
+        }
+    },
+    "RunPeriod": {
+        "DDMM": {
+            "apply_weekend_holiday_rule": "No",
+            "begin_day_of_month": 25,
+            "begin_month": 12,
+            "day_of_week_for_start_day": "Sunday",
+            "end_day_of_month": 25,
+            "end_month": 12,
+            "use_weather_file_daylight_saving_period": "No",
+            "use_weather_file_holidays_and_special_days": "No",
+            "use_weather_file_rain_indicators": "Yes",
+            "use_weather_file_snow_indicators": "Yes"
+        }
+    },
+    "Schedule:Compact": {
+        "Always On": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 1
+                }
+            ],
+            "schedule_type_limits_name": "On/Off"
+        },
+        "COOLING SETPOINTS": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 7:00"
+                },
+                {
+                    "field": 0
+                },
+                {
+                    "field": "Until: 20:00"
+                },
+                {
+                    "field": 0
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 0
+                }
+            ],
+            "schedule_type_limits_name": "Temperature"
+        },
+        "HEATING SETPOINTS": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 7:00"
+                },
+                {
+                    "field": 40
+                },
+                {
+                    "field": "Until: 17:00"
+                },
+                {
+                    "field": 40
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 40
+                }
+            ],
+            "schedule_type_limits_name": "Temperature"
+        },
+        "ZONE CONTROL TYPE SCHED": {
+            "data": [
+                {
+                    "field": "Through: 3/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 2
+                },
+                {
+                    "field": "Through: 9/30"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 1
+                },
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 2
+                }
+            ],
+            "schedule_type_limits_name": "Control Type"
+        }
+    },
+    "Schedule:File": {
+        "Aviability_Control": {
+            "column_number": 2,
+            "column_separator": "Comma",
+            "file_name": "C:\\Users\\grhen\\Documents\\GitHub\\RLforEP\\EP_IDF_Configuration\\RL_Aviability_Sch_0.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 3,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "AviabilityType"
+        },
+        "Shadow_Control": {
+            "column_number": 2,
+            "column_separator": "Comma",
+            "file_name": "C:\\Users\\grhen\\Documents\\GitHub\\RLforEP\\EP_IDF_Configuration\\RL_Control_Sch_0.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 3,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "AviabilityType"
+        },
+        "VentN_Control": {
+            "column_number": 2,
+            "column_separator": "Comma",
+            "file_name": "C:\\Users\\grhen\\Documents\\GitHub\\RLforEP\\EP_IDF_Configuration\\VentN_Aviability_Sch_0.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 3,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "AviabilityType"
+        },
+        "VentS_Control": {
+            "column_number": 2,
+            "column_separator": "Comma",
+            "file_name": "C:\\Users\\grhen\\Documents\\GitHub\\RLforEP\\EP_IDF_Configuration\\VentS_Aviability_Sch_0.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 3,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "AviabilityType"
+        }
+    },
+    "ScheduleTypeLimits": {
+        "Any Number": {},
+        "AviabilityType": {
+            "lower_limit_value": 0,
+            "numeric_type": "Discrete",
+            "unit_type": "Availability",
+            "upper_limit_value": 1
+        },
+        "Control Type": {
+            "lower_limit_value": 0,
+            "numeric_type": "Discrete",
+            "unit_type": "Dimensionless",
+            "upper_limit_value": 4
+        },
+        "Fraction": {
+            "lower_limit_value": 0,
+            "numeric_type": "Continuous",
+            "upper_limit_value": 1
+        },
+        "On/Off": {
+            "lower_limit_value": 0,
+            "numeric_type": "Discrete",
+            "unit_type": "Dimensionless",
+            "upper_limit_value": 1
+        },
+        "Temperature": {
+            "lower_limit_value": -60,
+            "numeric_type": "Continuous",
+            "unit_type": "Temperature",
+            "upper_limit_value": 200
+        }
+    },
+    "SimulationControl": {
+        "SimulationControl 1": {
+            "do_hvac_sizing_simulation_for_sizing_periods": "No",
+            "do_plant_sizing_calculation": "No",
+            "do_system_sizing_calculation": "No",
+            "do_zone_sizing_calculation": "No",
+            "maximum_number_of_hvac_sizing_simulation_passes": 1,
+            "run_simulation_for_sizing_periods": "No",
+            "run_simulation_for_weather_file_run_periods": "Yes"
+        }
+    },
+    "Site:Location": {
+        "Mendoza": {
+            "elevation": 676,
+            "latitude": -32.895,
+            "longitude": -68.872,
+            "time_zone": -3
+        }
+    },
+    "SurfaceConvectionAlgorithm:Inside": {
+        "SurfaceConvectionAlgorithm:Inside 1": {
+            "algorithm": "TARP"
+        }
+    },
+    "SurfaceConvectionAlgorithm:Outside": {
+        "SurfaceConvectionAlgorithm:Outside 1": {
+            "algorithm": "DOE-2"
+        }
+    },
+    "ThermostatSetpoint:SingleCooling": {
+        "Cooling Setpoint with SB": {
+            "setpoint_temperature_schedule_name": "COOLING SETPOINTS"
+        }
+    },
+    "ThermostatSetpoint:SingleHeating": {
+        "Heating Setpoint with SB": {
+            "setpoint_temperature_schedule_name": "HEATING SETPOINTS"
+        }
+    },
+    "Timestep": {
+        "Timestep 1": {
+            "number_of_timesteps_per_hour": 20
+        }
+    },
+    "Version": {
+        "Version 1": {
+            "version_identifier": "9.6"
+        }
+    },
+    "WindowMaterial:Blind": {
+        "Window Material Blind 1": {
+            "back_side_slat_beam_solar_reflectance": 0.7,
+            "back_side_slat_beam_visible_reflectance": 0.5,
+            "back_side_slat_diffuse_solar_reflectance": 0.7,
+            "back_side_slat_diffuse_visible_reflectance": 0.5,
+            "back_side_slat_infrared_hemispherical_emissivity": 0.9,
+            "blind_bottom_opening_multiplier": 0.5,
+            "blind_left_side_opening_multiplier": 0,
+            "blind_right_side_opening_multiplier": 0,
+            "blind_to_glass_distance": 0.05,
+            "blind_top_opening_multiplier": 0.5,
+            "front_side_slat_beam_solar_reflectance": 0.7,
+            "front_side_slat_beam_visible_reflectance": 0.5,
+            "front_side_slat_diffuse_solar_reflectance": 0.7,
+            "front_side_slat_diffuse_visible_reflectance": 0.5,
+            "front_side_slat_infrared_hemispherical_emissivity": 0.9,
+            "maximum_slat_angle": 180,
+            "minimum_slat_angle": 0,
+            "slat_angle": 45,
+            "slat_beam_solar_transmittance": 0,
+            "slat_beam_visible_transmittance": 0,
+            "slat_conductivity": 0.1,
+            "slat_diffuse_solar_transmittance": 0,
+            "slat_diffuse_visible_transmittance": 0,
+            "slat_infrared_hemispherical_transmittance": 0,
+            "slat_orientation": "Horizontal",
+            "slat_separation": 0.01875,
+            "slat_thickness": 0.001,
+            "slat_width": 0.025
+        }
+    },
+    "WindowMaterial:Glazing": {
+        "Clear 3mm": {
+            "back_side_infrared_hemispherical_emissivity": 0.84,
+            "back_side_solar_reflectance_at_normal_incidence": 0,
+            "back_side_visible_reflectance_at_normal_incidence": 0,
+            "conductivity": 0.9,
+            "dirt_correction_factor_for_solar_and_visible_transmittance": 1,
+            "front_side_infrared_hemispherical_emissivity": 0.84,
+            "front_side_solar_reflectance_at_normal_incidence": 0.075,
+            "front_side_visible_reflectance_at_normal_incidence": 0.081,
+            "infrared_transmittance_at_normal_incidence": 0,
+            "optical_data_type": "SpectralAverage",
+            "solar_diffusing": "No",
+            "solar_transmittance_at_normal_incidence": 0.837,
+            "thickness": 0.00299999999999999,
+            "visible_transmittance_at_normal_incidence": 0.898
+        }
+    },
+    "WindowShadingControl": {
+        "ShadingControl": {
+            "construction_with_shading_name": "Ventana_Sombra",
+            "fenestration_surfaces": [
+                {
+                    "fenestration_surface_name": "Zn001:Wall001:Win001"
+                }
+            ],
+            "glare_control_is_active": "No",
+            "multiple_surface_control_type": "Sequential",
+            "schedule_name": "Shadow_Control",
+            "shading_control_is_scheduled": "Yes",
+            "shading_control_sequence_number": 1,
+            "shading_control_type": "OnIfScheduleAllows",
+            "shading_type": "ExteriorBlind",
+            "type_of_slat_angle_control_for_blinds": "FixedSlatAngle",
+            "zone_name": "Thermal Zone: Modelo_Simple"
+        }
+    },
+    "Zone": {
+        "Thermal Zone: Modelo_Simple": {
+            "direction_of_relative_north": 0,
+            "x_origin": 0,
+            "y_origin": 0,
+            "z_origin": 0
+        }
+    },
+    "ZoneControl:Thermostat": {
+        "Termostato": {
+            "control_1_name": "Heating Setpoint with SB",
+            "control_1_object_type": "ThermostatSetpoint:SingleHeating",
+            "control_2_name": "Cooling Setpoint with SB",
+            "control_2_object_type": "ThermostatSetpoint:SingleCooling",
+            "control_type_schedule_name": "ZONE CONTROL TYPE SCHED",
+            "zone_or_zonelist_name": "Thermal Zone: Modelo_Simple"
+        }
+    },
+    "ZoneHVAC:EquipmentConnections": {
+        "ZoneHVAC:EquipmentConnections 1": {
+            "zone_air_inlet_node_or_nodelist_name": "ZoneInlets",
+            "zone_air_node_name": "NODE 4",
+            "zone_conditioning_equipment_list_name": "Equipos",
+            "zone_name": "Thermal Zone: Modelo_Simple",
+            "zone_return_air_node_or_nodelist_name": "NODE 5"
+        }
+    },
+    "ZoneHVAC:EquipmentList": {
+        "Equipos": {
+            "equipment": [
+                {
+                    "zone_equipment_cooling_sequence": 1,
+                    "zone_equipment_heating_or_no_load_sequence": 1,
+                    "zone_equipment_name": "EquipoClimatizacion",
+                    "zone_equipment_object_type": "ZoneHVAC:IdealLoadsAirSystem"
+                }
+            ],
+            "load_distribution_scheme": "SequentialLoad"
+        }
+    },
+    "ZoneHVAC:IdealLoadsAirSystem": {
+        "EquipoClimatizacion": {
+            "availability_schedule_name": "Aviability_Control",
+            "cooling_limit": "LimitCapacity",
+            "dehumidification_control_type": "ConstantSupplyHumidityRatio",
+            "heating_limit": "LimitCapacity",
+            "humidification_control_type": "ConstantSupplyHumidityRatio",
+            "maximum_heating_supply_air_humidity_ratio": 0.0156,
+            "maximum_heating_supply_air_temperature": 50,
+            "maximum_sensible_heating_capacity": 1000,
+            "maximum_total_cooling_capacity": 1000,
+            "minimum_cooling_supply_air_humidity_ratio": 0.0077,
+            "minimum_cooling_supply_air_temperature": 0,
+            "zone_supply_air_node_name": "NODE 1"
+        }
+    },
+    "ZoneInfiltration:DesignFlowRate": {
+        "Infiltraciones": {
+            "air_changes_per_hour": 2,
+            "constant_term_coefficient": 1,
+            "design_flow_rate_calculation_method": "AirChanges/Hour",
+            "schedule_name": "Always On",
+            "zone_or_zonelist_name": "Thermal Zone: Modelo_Simple"
+        }
+    },
+    "ZoneList": {
+        "189.1-2009 - Office - OpenOffice - CZ4-8": {
+            "zones": [
+                {
+                    "zone_name": "Thermal Zone: Modelo_Simple"
+                }
+            ]
+        }
+    }
+}
