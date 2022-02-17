@@ -1,3 +1,6 @@
+"""
+Entorno externo para RLlib que ejecuta EnergyPlus
+"""
 from six.moves import queue
 import gym
 import threading
@@ -16,7 +19,10 @@ api = EnergyPlusAPI()
 
 from IDF_tool import Schedules, LocationClimate, MainFunctions
 import numpy as np
-
+import time
+import os
+import shutil
+import pandas as pd
 
 @PublicAPI
 class ExternalEnv(threading.Thread):
@@ -49,7 +55,7 @@ class ExternalEnv(threading.Thread):
                  action_space: gym.Space,
                  observation_space: gym.Space,
                  max_concurrent: int = 100,
-                 config={
+                 config = {
                     'Folder_Output': '',
                     'Weather_file': '',
                     'epJSON_file': '',
@@ -62,7 +68,9 @@ class ExternalEnv(threading.Thread):
                     'rho': 0.25,
                     'beta': 20,
                     'psi': 0.005,
-                    'first_time_step': True
+                    'first_time_step': True,
+                    'directorio': '',
+                    'ruta': 'A' # A-Notebook Lenovo, B-Computadora grupo/Notebook Asus
                  }):
         """Initializes an ExternalEnv instance.
 
@@ -84,6 +92,73 @@ class ExternalEnv(threading.Thread):
         self._max_concurrent_episodes = max_concurrent
 
         self.EnvConfig = config
+
+        """
+        Se establece la ruta base de los datos del programa
+        """
+        # Estas rutas deben coincidir con las del ordenador que se está utilizando
+        if self.EnvConfig['ruta'] == "A":
+            self.ruta_base = 'C:/Users/grhen/Documents/GitHub/RLforEP'
+            self.ruta_resultados = 'C:/Users/grhen/Documents/RLforEP_Resultados'
+
+        if self.EnvConfig['ruta'] == "B":
+            self.ruta_base = 'D:/GitHub/RLforEP/RLforEP_vent'
+            self.ruta_resultados = 'D:/Resultados_RLforEP'
+
+        self.EnvConfig['directorio'] = ExternalEnv.directorio(ExternalEnv)
+
+        self.EnvConfig['Folder_Output'] = self.EnvConfig['directorio']
+        self.EnvConfig['Weather_file'] = self.EnvConfig['directorio'] + '/Resultados/Observatorio-hour_2.epw'
+        self.EnvConfig['epJSON_file'] = self.EnvConfig['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON'
+
+    def directorio(self):
+        """
+        Descripción de la función
+        """
+        # Se define el nombre de la carpeta o directorio a crear
+        fecha = str(time.strftime('%y-%m-%d'))
+        hora = str(time.strftime('%H-%M'))
+        path_directorio = self.ruta_base + '/' + fecha + '-'+ hora
+        try:
+            os.mkdir(path_directorio)
+            os.mkdir(path_directorio+'/Resultados')
+        except OSError:
+            time.sleep(60)
+            os.mkdir(path_directorio)
+            os.mkdir(path_directorio+'/Resultados')
+            print("Se ha creado el directorio: %s " % path_directorio)
+        except:
+            print("La creación del directorio %s falló" % path_directorio)
+        else:
+            print("Se ha creado el directorio: %s " % path_directorio)
+
+        ExternalEnv.copy_files(self.ruta_base, path_directorio)
+        return path_directorio
+
+    def copy_files(self):
+        '''
+    
+        '''
+        shutil.copy(self.ruta_base + '/experimento_parametros.json', self.EnvConfig['directorio'] + '/Resultados/experimento_parametros.json')
+        
+        # Para versión 950
+        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/modelo_simple_vent_mV950_model2.epJSON', self.EnvConfig['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
+        # Para versión 960
+        #shutil.copy(self.ruta_base + '/EP_IDF_Configuration/modelo_simple_vent_m.epJSON', self.EnvConfig['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
+        
+        shutil.copy(self.ruta_base + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', self.EnvConfig['directorio'] + '/Resultados/Observatorio-hour_2.epw')
+ 
+        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', self.EnvConfig['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
+        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/RL_Aviability_Sch_0.csv', self.EnvConfig['directorio'] + '/Resultados/RL_Aviability_Sch_0.csv')
+        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', self.EnvConfig['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
+        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', self.EnvConfig['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
+
+        '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
+        output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]
+        pd.DataFrame(output).to_csv(self.EnvConfig['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
+        pd.DataFrame(output).to_csv(self.EnvConfig['directorio'] + '/Resultados/output_comp.csv', mode="w", index=False, header=False)
+        pd.DataFrame(output).to_csv(self.EnvConfig['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
+        
 
     @PublicAPI
     def run(self):
@@ -277,7 +352,7 @@ class ExternalEnv(threading.Thread):
                 i+=1
             return binario
 
-    def episode_epJSON(conf_experimento, month, day):
+    def episode_epJSON(self, month, day):
         """
         Este toma un archivo epJSON y lo modifica. Luego retorna la ruta del archivo modificado.
         Las modificaciones efectuadas son:
@@ -285,17 +360,17 @@ class ExternalEnv(threading.Thread):
             2. Cambio del día a ejecutar.
             3. Cambio en los path de los calendarios de disponibilidad de los objetos accionables en la vivienda.
         """
-        epJSON_file_old = MainFunctions.MainFunctions.read_epjson(conf_experimento['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
+        epJSON_file_old = MainFunctions.MainFunctions.read_epjson(self.EnvConfig['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
         LocationClimate.RunPeriod.begin_day_of_month(epJSON_file_old, "DDMM", day)
         LocationClimate.RunPeriod.begin_month(epJSON_file_old, "DDMM", month)
         LocationClimate.RunPeriod.end_day_of_month(epJSON_file_old, "DDMM", day)
         LocationClimate.RunPeriod.end_month(epJSON_file_old, "DDMM", month)
-        Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control", conf_experimento['directorio'] + '/Resultados/RL_Aviability_Sch_0.csv')
-        Schedules.Schedule_File.file_name(epJSON_file_old, "Shadow_Control", conf_experimento['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
-        Schedules.Schedule_File.file_name(epJSON_file_old, "VentN_Control", conf_experimento['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
-        Schedules.Schedule_File.file_name(epJSON_file_old, "VentS_Control", conf_experimento['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
-        MainFunctions.MainFunctions.write_epjson(conf_experimento['directorio'] + '/Resultados/new.epJSON', epJSON_file_old)
-        epJSON_new = conf_experimento['directorio'] + '/Resultados/new.epJSON'
+        Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control", self.EnvConfig['directorio'] + '/Resultados/RL_Aviability_Sch_0.csv')
+        Schedules.Schedule_File.file_name(epJSON_file_old, "Shadow_Control", self.EnvConfig['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
+        Schedules.Schedule_File.file_name(epJSON_file_old, "VentN_Control", self.EnvConfig['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
+        Schedules.Schedule_File.file_name(epJSON_file_old, "VentS_Control", self.EnvConfig['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
+        MainFunctions.MainFunctions.write_epjson(self.EnvConfig['directorio'] + '/Resultados/new.epJSON', epJSON_file_old)
+        epJSON_new = self.EnvConfig['directorio'] + '/Resultados/new.epJSON'
 
         return epJSON_new
 
