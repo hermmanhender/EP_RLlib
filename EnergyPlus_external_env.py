@@ -9,6 +9,7 @@ from typing import Optional
 
 from ray.rllib.utils.annotations import PublicAPI
 from ray.rllib.utils.typing import EnvActionType, EnvObsType, EnvInfoDict
+from ray.tune.registry import register_env
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/EP_RLlib')
 
@@ -25,7 +26,7 @@ import shutil
 import pandas as pd
 
 @PublicAPI
-class ExternalEnv(threading.Thread):
+class EPExternalEnv(threading.Thread):
     """An environment that interfaces with external agents.
 
     Unlike simulator envs, control is inverted: The environment queries the
@@ -105,7 +106,7 @@ class ExternalEnv(threading.Thread):
             self.ruta_base = 'D:/GitHub/RLforEP/RLforEP_vent'
             self.ruta_resultados = 'D:/Resultados_RLforEP'
 
-        self.EnvConfig['directorio'] = ExternalEnv.directorio(ExternalEnv)
+        self.EnvConfig['directorio'] = EPExternalEnv.directorio(EPExternalEnv)
 
         self.EnvConfig['Folder_Output'] = self.EnvConfig['directorio']
         self.EnvConfig['Weather_file'] = self.EnvConfig['directorio'] + '/Resultados/Observatorio-hour_2.epw'
@@ -132,7 +133,7 @@ class ExternalEnv(threading.Thread):
         else:
             print("Se ha creado el directorio: %s " % path_directorio)
 
-        ExternalEnv.copy_files(self.ruta_base, path_directorio)
+        EPExternalEnv.copy_files(self.ruta_base, path_directorio)
         return path_directorio
 
     def copy_files(self):
@@ -174,7 +175,7 @@ class ExternalEnv(threading.Thread):
         # quedado en la memoria despues de una ejecución previa (recomendado)
         api.state_manager.reset_state(state)
         # se establece el punto de llamado para el intercambio de información con el simulador
-        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, ExternalEnv.EP_exchange_function)
+        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, EPExternalEnv.EP_exchange_function)
         # se corre el simulador
         try:
             api.runtime.run_energyplus(state, ['-d', self.EnvConfig['Folder_Output'], '-w', self.EnvConfig['Weather_file'], self.EnvConfig['epJSON_file']])
@@ -182,7 +183,7 @@ class ExternalEnv(threading.Thread):
             api.runtime.run_energyplus(state, ['-d', self.EnvConfig['Folder_Output'], '-w', self.EnvConfig['Weather_file'], self.EnvConfig['epJSON_file']])
         # se elimina el estado para evitar posibles errores en la memoria (opcional)(con la versión EP 960
         # esto arroja error)
-        ExternalEnv.end_episode(ExternalEnv, state.EnvConfig['episode'], state.EnvConfig['last_observation'])
+        EPExternalEnv.end_episode(EPExternalEnv, state.EnvConfig['episode'], state.EnvConfig['last_observation'])
 
 
     def EP_exchange_function(state):
@@ -285,13 +286,13 @@ class ExternalEnv(threading.Thread):
                 SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                 """
                 if state.EnvConfig['first_time_step'] == False:
-                    ExternalEnv.log_returns(ExternalEnv, state.EnvConfig['episode'], r_tp1, {}, {})
+                    EPExternalEnv.log_returns(EPExternalEnv, state.EnvConfig['episode'], r_tp1, {}, {})
 
                 if state.EnvConfig['first_time_step'] == True:
                     state.EnvConfig['first_time_step'] = False
 
                 """Se obtiene la acción de RLlib"""
-                a_tp1 = ExternalEnv.get_action(ExternalEnv, state.EnvConfig['episode'], s_cont_tp1)
+                a_tp1 = EPExternalEnv.get_action(EPExternalEnv, state.EnvConfig['episode'], s_cont_tp1)
                 
                 """
                 SE REALIZAN LAS ACCIONES EN EL SIMULADOR
@@ -315,7 +316,7 @@ class ExternalEnv(threading.Thread):
                 # El sistema propuesto controla todos los elementos del edificio, por lo que
                 # se transforma la acción seleccionada del espacio de acciones a una lista que
                 # asigna el control de cada uno de los elementos.  
-                a_tp1_lista = ExternalEnv.decimal_a_lista(a_tp1, 4)
+                a_tp1_lista = EPExternalEnv.decimal_a_lista(a_tp1, 4)
                 a_tp1_aa = a_tp1_lista[0]
                 a_tp1_p = a_tp1_lista[1]
                 a_tp1_vn = a_tp1_lista[2]
