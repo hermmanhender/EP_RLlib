@@ -9,7 +9,6 @@ from typing import Optional
 
 from ray.rllib.utils.annotations import PublicAPI
 from ray.rllib.utils.typing import EnvActionType, EnvObsType, EnvInfoDict
-from ray.tune.registry import register_env
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/EP_RLlib')
 
@@ -71,6 +70,7 @@ class EPExternalEnv(threading.Thread):
                     'psi': 0.005,
                     'first_time_step': True,
                     'directorio': '',
+                    'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
                     'ruta': 'A' # A-Notebook Lenovo, B-Computadora grupo/Notebook Asus
                  }):
         """Initializes an ExternalEnv instance.
@@ -99,14 +99,35 @@ class EPExternalEnv(threading.Thread):
         """
         # Estas rutas deben coincidir con las del ordenador que se está utilizando
         if self.EnvConfig['ruta'] == "A":
-            self.ruta_base = 'C:/Users/grhen/Documents/GitHub/RLforEP'
+            self.EnvConfig['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/RLforEP'
             self.ruta_resultados = 'C:/Users/grhen/Documents/RLforEP_Resultados'
 
         if self.EnvConfig['ruta'] == "B":
-            self.ruta_base = 'D:/GitHub/RLforEP/RLforEP_vent'
+            self.EnvConfig['ruta_base'] = 'D:/GitHub/RLforEP/RLforEP_vent'
             self.ruta_resultados = 'D:/Resultados_RLforEP'
+        else:
+            self.EnvConfig['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/RLforEP'
+            self.ruta_resultados = 'C:/Users/grhen/Documents/RLforEP_Resultados'
 
-        self.EnvConfig['directorio'] = EPExternalEnv.directorio(EPExternalEnv)
+        fecha = str(time.strftime('%y-%m-%d'))
+        hora = str(time.strftime('%H-%M'))
+        self.EnvConfig['directorio'] = self.EnvConfig['ruta_base'] + '/' + fecha + '-'+ hora
+        try:
+            os.mkdir(self.EnvConfig['directorio'])
+            os.mkdir(self.EnvConfig['directorio']+'/Resultados')
+        except OSError:
+            time.sleep(60)
+            os.mkdir(self.EnvConfig['directorio'])
+            os.mkdir(self.EnvConfig['directorio']+'/Resultados')
+            print("Se ha creado el directorio: %s " % self.EnvConfig['directorio'])
+        except:
+            print("La creación del directorio %s falló" % self.EnvConfig['directorio'])
+        else:
+            print("Se ha creado el directorio: %s " % self.EnvConfig['directorio'])
+
+        EPExternalEnv.copy_files(EPExternalEnv)
+        
+        #self.EnvConfig['directorio'] = EPExternalEnv.directorio(EPExternalEnv)
 
         self.EnvConfig['Folder_Output'] = self.EnvConfig['directorio']
         self.EnvConfig['Weather_file'] = self.EnvConfig['directorio'] + '/Resultados/Observatorio-hour_2.epw'
@@ -119,7 +140,7 @@ class EPExternalEnv(threading.Thread):
         # Se define el nombre de la carpeta o directorio a crear
         fecha = str(time.strftime('%y-%m-%d'))
         hora = str(time.strftime('%H-%M'))
-        path_directorio = self.ruta_base + '/' + fecha + '-'+ hora
+        path_directorio = self.EnvConfig['ruta_base'] + '/' + fecha + '-'+ hora
         try:
             os.mkdir(path_directorio)
             os.mkdir(path_directorio+'/Resultados')
@@ -133,26 +154,26 @@ class EPExternalEnv(threading.Thread):
         else:
             print("Se ha creado el directorio: %s " % path_directorio)
 
-        EPExternalEnv.copy_files(self.ruta_base, path_directorio)
+        EPExternalEnv.copy_files(EPExternalEnv)
         return path_directorio
 
     def copy_files(self):
         '''
     
         '''
-        shutil.copy(self.ruta_base + '/experimento_parametros.json', self.EnvConfig['directorio'] + '/Resultados/experimento_parametros.json')
+        shutil.copy(self.EnvConfig['ruta_base'] + '/experimento_parametros.json', self.EnvConfig['directorio'] + '/Resultados/experimento_parametros.json')
         
         # Para versión 950
-        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/modelo_simple_vent_mV950_model2.epJSON', self.EnvConfig['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
+        shutil.copy(self.EnvConfig['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_vent_mV950_model2.epJSON', self.EnvConfig['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
         # Para versión 960
-        #shutil.copy(self.ruta_base + '/EP_IDF_Configuration/modelo_simple_vent_m.epJSON', self.EnvConfig['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
+        #shutil.copy(self.EnvConfig['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_vent_m.epJSON', self.EnvConfig['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
         
-        shutil.copy(self.ruta_base + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', self.EnvConfig['directorio'] + '/Resultados/Observatorio-hour_2.epw')
+        shutil.copy(self.EnvConfig['ruta_base'] + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', self.EnvConfig['directorio'] + '/Resultados/Observatorio-hour_2.epw')
  
-        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', self.EnvConfig['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
-        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/RL_Aviability_Sch_0.csv', self.EnvConfig['directorio'] + '/Resultados/RL_Aviability_Sch_0.csv')
-        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', self.EnvConfig['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
-        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', self.EnvConfig['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
+        shutil.copy(self.EnvConfig['ruta_base'] + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', self.EnvConfig['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
+        shutil.copy(self.EnvConfig['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_0.csv', self.EnvConfig['directorio'] + '/Resultados/RL_Aviability_Sch_0.csv')
+        shutil.copy(self.EnvConfig['ruta_base'] + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', self.EnvConfig['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
+        shutil.copy(self.EnvConfig['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', self.EnvConfig['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
         output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]
