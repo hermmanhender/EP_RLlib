@@ -39,6 +39,8 @@ In either case, the user of PolicyClient must:
 
 import argparse
 import EnergyPlus_external_env
+from gym.spaces import Discrete, Box
+import numpy as np
 
 from ray.rllib.env.policy_client import PolicyClient
 
@@ -74,7 +76,10 @@ if __name__ == "__main__":
     # unnecessary env objects within the PolicyClient/Server objects, but
     # that only this following env and the loop below runs the entire
     # training process.
-    env = EnergyPlus_external_env.EPExternalEnv()
+    env = EnergyPlus_external_env.EPExternalEnv(
+        action_space = Discrete(2),
+        observation_space = Box(-np.Inf, np.Inf, (7,))
+    )
 
     # If server has n workers, all ports between 9900 and 990[n-1] should
     # be listened on. E.g. if server has num_workers=2, try 9900 or 9901.

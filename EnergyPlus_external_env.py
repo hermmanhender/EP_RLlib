@@ -24,6 +24,8 @@ import os
 import shutil
 import pandas as pd
 
+EnvConfig = {}
+
 @PublicAPI
 class EPExternalEnv(threading.Thread):
     """An environment that interfaces with external agents.
@@ -81,7 +83,7 @@ class EPExternalEnv(threading.Thread):
             max_concurrent: Max number of active episodes to allow at
                 once. Exceeding this limit raises an error.
         """
-
+        global EnvConfig
         threading.Thread.__init__(self)
 
         self.daemon = True
@@ -93,6 +95,7 @@ class EPExternalEnv(threading.Thread):
         self._max_concurrent_episodes = max_concurrent
 
         self.EnvConfig = config
+        EnvConfig = self.EnvConfig
 
         """
         Se establece la ruta base de los datos del programa
@@ -102,7 +105,7 @@ class EPExternalEnv(threading.Thread):
             self.EnvConfig['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/RLforEP'
             self.ruta_resultados = 'C:/Users/grhen/Documents/RLforEP_Resultados'
 
-        if self.EnvConfig['ruta'] == "B":
+        elif self.EnvConfig['ruta'] == "B":
             self.EnvConfig['ruta_base'] = 'D:/GitHub/RLforEP/RLforEP_vent'
             self.ruta_resultados = 'D:/Resultados_RLforEP'
         else:
@@ -125,42 +128,6 @@ class EPExternalEnv(threading.Thread):
         else:
             print("Se ha creado el directorio: %s " % self.EnvConfig['directorio'])
 
-        EPExternalEnv.copy_files(EPExternalEnv)
-        
-        #self.EnvConfig['directorio'] = EPExternalEnv.directorio(EPExternalEnv)
-
-        self.EnvConfig['Folder_Output'] = self.EnvConfig['directorio']
-        self.EnvConfig['Weather_file'] = self.EnvConfig['directorio'] + '/Resultados/Observatorio-hour_2.epw'
-        self.EnvConfig['epJSON_file'] = self.EnvConfig['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON'
-
-    def directorio(self):
-        """
-        Descripción de la función
-        """
-        # Se define el nombre de la carpeta o directorio a crear
-        fecha = str(time.strftime('%y-%m-%d'))
-        hora = str(time.strftime('%H-%M'))
-        path_directorio = self.EnvConfig['ruta_base'] + '/' + fecha + '-'+ hora
-        try:
-            os.mkdir(path_directorio)
-            os.mkdir(path_directorio+'/Resultados')
-        except OSError:
-            time.sleep(60)
-            os.mkdir(path_directorio)
-            os.mkdir(path_directorio+'/Resultados')
-            print("Se ha creado el directorio: %s " % path_directorio)
-        except:
-            print("La creación del directorio %s falló" % path_directorio)
-        else:
-            print("Se ha creado el directorio: %s " % path_directorio)
-
-        EPExternalEnv.copy_files(EPExternalEnv)
-        return path_directorio
-
-    def copy_files(self):
-        '''
-    
-        '''
         shutil.copy(self.EnvConfig['ruta_base'] + '/experimento_parametros.json', self.EnvConfig['directorio'] + '/Resultados/experimento_parametros.json')
         
         # Para versión 950
@@ -181,6 +148,13 @@ class EPExternalEnv(threading.Thread):
         pd.DataFrame(output).to_csv(self.EnvConfig['directorio'] + '/Resultados/output_comp.csv', mode="w", index=False, header=False)
         pd.DataFrame(output).to_csv(self.EnvConfig['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
         
+        
+        #self.EnvConfig['directorio'] = EPExternalEnv.directorio(EPExternalEnv)
+
+        self.EnvConfig['Folder_Output'] = self.EnvConfig['directorio']
+        self.EnvConfig['Weather_file'] = self.EnvConfig['directorio'] + '/Resultados/Observatorio-hour_2.epw'
+        self.EnvConfig['epJSON_file'] = self.EnvConfig['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON'
+
 
     @PublicAPI
     def run(self):
@@ -189,14 +163,16 @@ class EPExternalEnv(threading.Thread):
         forma local y asigna el momento en el que se hace el intercambio con la función de intercambio
         de información EP_exchange_function.
         """
+        global EnvConfig
+
+        EnvConfig['episode'] = self.start_episode(self)
         # se establece un estado en el simulador (indispensable)
         state = api.state_manager.new_state()
-        state.EnvConfig = self.EnvConfig
         # se hace un reset del estado en el simulador para borrar cualquier archivo que pueda haber 
         # quedado en la memoria despues de una ejecución previa (recomendado)
         api.state_manager.reset_state(state)
         # se establece el punto de llamado para el intercambio de información con el simulador
-        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, EPExternalEnv.EP_exchange_function)
+        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, self.EP_exchange_function)
         # se corre el simulador
         try:
             api.runtime.run_energyplus(state, ['-d', self.EnvConfig['Folder_Output'], '-w', self.EnvConfig['Weather_file'], self.EnvConfig['epJSON_file']])
@@ -204,7 +180,7 @@ class EPExternalEnv(threading.Thread):
             api.runtime.run_energyplus(state, ['-d', self.EnvConfig['Folder_Output'], '-w', self.EnvConfig['Weather_file'], self.EnvConfig['epJSON_file']])
         # se elimina el estado para evitar posibles errores en la memoria (opcional)(con la versión EP 960
         # esto arroja error)
-        EPExternalEnv.end_episode(EPExternalEnv, state.EnvConfig['episode'], state.EnvConfig['last_observation'])
+        self.end_episode(self, episode_id=EnvConfig['episode'], observation=EnvConfig['last_observation'])
 
 
     def EP_exchange_function(state):
@@ -221,7 +197,9 @@ class EPExternalEnv(threading.Thread):
         # conf_experimento are those which no change in all the run. var_case_n are those which change only
         # between configurations (ej. the learning rate tuning). var_step_t are those which change inside the
         # episode by step times.
-        
+
+        global EnvConfig
+
         #Condición necesaria para leer las variables disponibles en EP a solicitar
         if api.exchange.api_data_fully_ready(state):
             
@@ -267,7 +245,7 @@ class EPExternalEnv(threading.Thread):
                 
                 # the values are saved in a dictionary to compose the observation (or state)
                 s_cont_tp1 = np.array([rad,Bw,To,Ti,v,d,RHi])
-                state.EnvConfig['last_observation'].update(s_cont_tp1)
+                EnvConfig.update({'last_observation': s_cont_tp1})
 
                 """
                 CÁLCULO DE ENERGÍA, CONFORT Y RECOMPENSA
@@ -280,40 +258,40 @@ class EPExternalEnv(threading.Thread):
                 e_tp1 = q_supp/(3.6*1000000)
 
                 #La recompensa es calculada a partir de la energía y los minutos de confort
-                if Ti > state.EnvConfig['T_SP'] + state.EnvConfig['dT_up'] or Ti < state.EnvConfig['T_SP'] - state.EnvConfig['dT_dn']:
-                    if RHi > state.EnvConfig['SP_RH']:
-                        r_temp = - state.EnvConfig['rho']*(Ti - state.EnvConfig['T_SP'])**2
-                        r_hr = - state.EnvConfig['psi']*(RHi - state.EnvConfig['SP_RH'])**2
+                if Ti > EnvConfig['T_SP'] + EnvConfig['dT_up'] or Ti < EnvConfig['T_SP'] - EnvConfig['dT_dn']:
+                    if RHi > EnvConfig['SP_RH']:
+                        r_temp = - EnvConfig['rho']*(Ti - EnvConfig['T_SP'])**2
+                        r_hr = - EnvConfig['psi']*(RHi - EnvConfig['SP_RH'])**2
                     else:
-                        r_temp = - state.EnvConfig['rho']*(Ti - state.EnvConfig['T_SP'])**2
-                        r_hr = state.EnvConfig['psi'] * 10
+                        r_temp = - EnvConfig['rho']*(Ti - EnvConfig['T_SP'])**2
+                        r_hr = EnvConfig['psi'] * 10
 
-                elif RHi > state.EnvConfig['SP_RH']:
-                    r_temp = state.EnvConfig['rho'] * 10
-                    r_hr = - state.EnvConfig['psi']*(RHi - state.EnvConfig['SP_RH'])**2
+                elif RHi > EnvConfig['SP_RH']:
+                    r_temp = EnvConfig['rho'] * 10
+                    r_hr = - EnvConfig['psi']*(RHi - EnvConfig['SP_RH'])**2
 
                 else:
-                    r_temp = state.EnvConfig['rho'] * 10
-                    r_hr = state.EnvConfig['psi'] * 10
+                    r_temp = EnvConfig['rho'] * 10
+                    r_hr = EnvConfig['psi'] * 10
                 
                 if e_tp1 > 0:
-                    r_energia = - state.EnvConfig['beta']*e_tp1
+                    r_energia = - EnvConfig['beta']*e_tp1
                 else:
-                    r_energia = state.EnvConfig['beta']
+                    r_energia = EnvConfig['beta']
                 
                 r_tp1 = r_energia + r_temp + r_hr
 
                 """
                 SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                 """
-                if state.EnvConfig['first_time_step'] == False:
-                    EPExternalEnv.log_returns(EPExternalEnv, state.EnvConfig['episode'], r_tp1, {}, {})
+                if EnvConfig['first_time_step'] == False:
+                    self.log_returns(self, episode_id=EnvConfig['episode'], reward=r_tp1, info={})
 
-                if state.EnvConfig['first_time_step'] == True:
-                    state.EnvConfig['first_time_step'] = False
+                if EnvConfig['first_time_step'] == True:
+                    EnvConfig['first_time_step'] = False
 
                 """Se obtiene la acción de RLlib"""
-                a_tp1 = EPExternalEnv.get_action(EPExternalEnv, state.EnvConfig['episode'], s_cont_tp1)
+                a_tp1 = self.get_action(self, EnvConfig['episode'], s_cont_tp1)
                 
                 """
                 SE REALIZAN LAS ACCIONES EN EL SIMULADOR
@@ -601,3 +579,6 @@ class _ExternalEnvEpisode:
         with self.results_avail_condition:
             self.data_queue.put_nowait(item)
             self.results_avail_condition.notify()
+
+if "__main__" == __name__:
+    EPExternalEnv.run()

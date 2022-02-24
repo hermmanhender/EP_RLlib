@@ -20,6 +20,7 @@ tune.run(
     }
 )
 """
+from cmath import inf
 import numpy as np
 from typing import Dict
 import ray
@@ -33,30 +34,12 @@ from EnergyPlus_external_env import EPExternalEnv
 
 def env_creator():
     action_space = Discrete(2)
-    observation_space = Box(-10, 10, (4,))
-    config = {
-                    'Folder_Output': '',
-                    'Weather_file': '',
-                    'epJSON_file': '',
-                    'episode': 0,
-                    'last_observation': np.zeros((7,),dtype=float),
-                    'T_SP': 24.,
-                    'dT_up': 1.,
-                    'dT_dn': 1.,
-                    'SP_RH': 70.,
-                    'rho': 0.25,
-                    'beta': 20,
-                    'psi': 0.005,
-                    'first_time_step': True,
-                    'directorio': '',
-                    'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
-                    'ruta': 'A' # A-Notebook Lenovo, B-Computadora grupo/Notebook Asus
-                 }
+    observation_space = Box(-np.Inf, np.Inf, (7,))
+    
     return EPExternalEnv(
-                 action_space,
-                 observation_space,
-                 max_concurrent = 100,
-                 config = config)
+                 action_space = action_space,
+                 observation_space = observation_space,
+                 )
 
 if __name__ == "__main__":
     
