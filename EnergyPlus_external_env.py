@@ -157,17 +157,15 @@ class EPExternalEnv(threading.Thread):
         self.EnvConfig['Weather_file'] = self.EnvConfig['directorio'] + '/Resultados/Observatorio-hour_2.epw'
         self.EnvConfig['epJSON_file'] = self.EnvConfig['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON'
 
-        self_EPEnvEx.update(
-            self.daemon,
-            self.action_space,
-            self.observation_space,
-            self._episodes,
-            self._finished,
-            self._results_avail_condition,
-            self._max_concurrent_episodes,
-            self.EnvConfig,
-            self.ruta_resultados
-            )
+        self_EPEnvEx.update(self.daemon)
+        self_EPEnvEx.update(self.action_space)
+        self_EPEnvEx.update(self.observation_space)
+        self_EPEnvEx.update(self._episodes)
+        self_EPEnvEx.update(self._finished)
+        self_EPEnvEx.update(self._results_avail_condition)
+        self_EPEnvEx.update(self._max_concurrent_episodes)
+        self_EPEnvEx.update(self.EnvConfig)
+        self_EPEnvEx.update(self.ruta_resultados)
 
     @PublicAPI
     def run(self):
