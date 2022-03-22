@@ -241,7 +241,8 @@ class EPExternalEnv(threading.Thread):
     def start_episode(self,
                       episode_id: Optional[str] = None,
                       training_enabled: bool = True) -> str:
-        """Record the start of an episode.
+        """
+        Record the start of an episode.
 
         Args:
             episode_id: Unique string id for the episode or
@@ -272,7 +273,8 @@ class EPExternalEnv(threading.Thread):
     @PublicAPI
     def get_action(self, episode_id: str,
                    observation: EnvObsType) -> EnvActionType:
-        """Record an observation and get the on-policy action.
+        """
+        Record an observation and get the on-policy action.
 
         Args:
             episode_id: Episode id returned from start_episode().
@@ -288,7 +290,8 @@ class EPExternalEnv(threading.Thread):
     @PublicAPI
     def log_action(self, episode_id: str, observation: EnvObsType,
                    action: EnvActionType) -> None:
-        """Record an observation and (off-policy) action taken.
+        """
+        Record an observation and (off-policy) action taken.
 
         Args:
             episode_id: Episode id returned from start_episode().
@@ -304,7 +307,8 @@ class EPExternalEnv(threading.Thread):
                     episode_id: str,
                     reward: float,
                     info: Optional[EnvInfoDict] = None) -> None:
-        """Records returns (rewards and infos) from the environment.
+        """
+        Records returns (rewards and infos) from the environment.
 
         The reward will be attributed to the previous action taken by the
         episode. Rewards accumulate until the next action. If no reward is
@@ -324,7 +328,8 @@ class EPExternalEnv(threading.Thread):
 
     @PublicAPI
     def end_episode(self, episode_id: str, observation: EnvObsType) -> None:
-        """Records the end of an episode.
+        """
+        Records the end of an episode.
 
         Args:
             episode_id: Episode id returned from start_episode().
@@ -336,7 +341,8 @@ class EPExternalEnv(threading.Thread):
         episode.done(observation)
 
     def _get(self, episode_id: str) -> "_ExternalEnvEpisode":
-        """Get a started episode by its ID or raise an error."""
+        """
+        Get a started episode by its ID or raise an error."""
 
         if episode_id in self._finished:
             raise ValueError(
@@ -349,7 +355,9 @@ class EPExternalEnv(threading.Thread):
 
 
 class _ExternalEnvEpisode:
-    """Tracked state for each active episode."""
+    """
+    Tracked state for each active episode.
+    """
 
     def __init__(self,
                  episode_id: str,
