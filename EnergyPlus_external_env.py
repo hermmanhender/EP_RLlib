@@ -24,9 +24,6 @@ import os
 import shutil
 import pandas as pd
 
-EnvConfig = {}
-self_EPEnvEx = {}
-
 @PublicAPI
 class EPExternalEnv(threading.Thread):
     """An environment that interfaces with external agents.
@@ -63,7 +60,7 @@ class EPExternalEnv(threading.Thread):
                     'Weather_file': '',
                     'epJSON_file': '',
                     'episode': 0,
-                    'last_observation': np.zeros((7,),dtype=float),
+                    'last_observation': [],
                     'T_SP': 24.,
                     'dT_up': 1.,
                     'dT_dn': 1.,
@@ -84,7 +81,7 @@ class EPExternalEnv(threading.Thread):
             max_concurrent: Max number of active episodes to allow at
                 once. Exceeding this limit raises an error.
         """
-        global EnvConfig, self_EPEnvEx
+
         threading.Thread.__init__(self)
 
         self.daemon = True
@@ -96,7 +93,6 @@ class EPExternalEnv(threading.Thread):
         self._max_concurrent_episodes = max_concurrent
 
         self.EnvConfig = config
-        EnvConfig = self.EnvConfig
         
 
         """
@@ -157,15 +153,6 @@ class EPExternalEnv(threading.Thread):
         self.EnvConfig['Weather_file'] = self.EnvConfig['directorio'] + '/Resultados/Observatorio-hour_2.epw'
         self.EnvConfig['epJSON_file'] = self.EnvConfig['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON'
 
-        self_EPEnvEx.update(self.daemon)
-        self_EPEnvEx.update(self.action_space)
-        self_EPEnvEx.update(self.observation_space)
-        self_EPEnvEx.update(self._episodes)
-        self_EPEnvEx.update(self._finished)
-        self_EPEnvEx.update(self._results_avail_condition)
-        self_EPEnvEx.update(self._max_concurrent_episodes)
-        self_EPEnvEx.update(self.EnvConfig)
-        self_EPEnvEx.update(self.ruta_resultados)
 
     @PublicAPI
     def run(self):
@@ -174,16 +161,15 @@ class EPExternalEnv(threading.Thread):
         forma local y asigna el momento en el que se hace el intercambio con la función de intercambio
         de información EP_exchange_function.
         """
-        global EnvConfig
 
-        EnvConfig['episode'] = self.start_episode(self)
+        self.EnvConfig['episode'] = self.start_episode(self)
         # se establece un estado en el simulador (indispensable)
         state = api.state_manager.new_state()
         # se hace un reset del estado en el simulador para borrar cualquier archivo que pueda haber 
         # quedado en la memoria despues de una ejecución previa (recomendado)
         api.state_manager.reset_state(state)
         # se establece el punto de llamado para el intercambio de información con el simulador
-        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, EP_exchange_function)
+        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, self.EP_exchange_function)
         # se corre el simulador
         try:
             api.runtime.run_energyplus(state, ['-d', self.EnvConfig['Folder_Output'], '-w', self.EnvConfig['Weather_file'], self.EnvConfig['epJSON_file']])
@@ -191,7 +177,7 @@ class EPExternalEnv(threading.Thread):
             api.runtime.run_energyplus(state, ['-d', self.EnvConfig['Folder_Output'], '-w', self.EnvConfig['Weather_file'], self.EnvConfig['epJSON_file']])
         # se elimina el estado para evitar posibles errores en la memoria (opcional)(con la versión EP 960
         # esto arroja error)
-        self.end_episode(self, episode_id=EnvConfig['episode'], observation=EnvConfig['last_observation'])
+        self.end_episode(self.EnvConfig['episode'], self.EnvConfig['last_observation'])
 
 
     def decimal_a_lista(decimal, len):
@@ -353,6 +339,153 @@ class EPExternalEnv(threading.Thread):
 
         return self._episodes[episode_id]
 
+    def EP_exchange_function(self, state):
+        '''
+        # Callback function for EnergyPlus
+
+        Este método permite el intercambio de información (entrada y salida) entre el simulador
+        EnergyPlus y un ejecutor de decisiones. El objeto de la creación de este método es poder 
+        realizar aprendizaje automático sobre las decisiones de un edificio a partir de la utilización
+        de aprendizaje por refuerzos.
+        '''
+        # The variables of the experiment, case and episode can not be called in the method's variables
+        # and due that are called here as global variables.
+        # conf_experimento are those which no change in all the run. var_case_n are those which change only
+        # between configurations (ej. the learning rate tuning). var_step_t are those which change inside the
+        # episode by step times.
+
+        #Condición necesaria para leer las variables disponibles en EP a solicitar
+        if api.exchange.api_data_fully_ready(state):
+            
+            #Condición para que no se escriban los datos durante el periodo de calentamiento
+            if api.exchange.warmup_flag(state) == 0:
+                
+                """
+                LECTURA DE VARIABLES DE ESTADO (s_tp1)
+                """
+                '''Lectura de algunas variables'''
+                # num_time_steps_in_hour is used to compute the n-step_max in a episode and the quantity of
+                # minutes of comfort
+                num_time_steps_in_hour = api.exchange.num_time_steps_in_hour(state)
+                # time_step and hour are needed to obtain the radiation rad
+                # time step is based on data of EP and is in range between one hour
+                time_step = api.exchange.zone_time_step_number(state)
+                hour = api.exchange.hour(state)
+
+                '''Lectura de los handles'''
+                # Handles are needed before call the values that are inside them.
+                # hadle for the radiation in the plane of the windows
+                Bw_handle = api.exchange.get_variable_handle(state, "Surface Outside Face Incident Solar Radiation Rate per Area", "Zn001:Wall001:Win001")
+                # handle for the outside temperature
+                To_handle = api.exchange.get_variable_handle(state, "Site Outdoor Air Drybulb Temperature", "Environment")
+                # hadle for the inside (zone) temperature
+                Ti_handle = api.exchange.get_variable_handle(state, "Zone Mean Air Temperature", "Thermal Zone: Modelo_Simple")
+                # handle for wind speed in the site
+                v_handle = api.exchange.get_variable_handle(state, "Site Wind Speed", "Environment")
+                # handle for direction of the wind
+                d_handle = api.exchange.get_variable_handle(state, "Site Wind Direction", "Environment")
+                # handle for the inside relativ humidity
+                RHi_handle = api.exchange.get_variable_handle(state,"Zone Air Relative Humidity", "Thermal Zone: Modelo_Simple")
+
+                '''Lectura de las variables de estado'''
+                # Here the values of the handles are consulting
+                rad = api.exchange.today_weather_beam_solar_at_time(state, hour, time_step)
+                Bw = api.exchange.get_variable_value(state, Bw_handle)
+                To = api.exchange.get_variable_value(state, To_handle)
+                Ti = api.exchange.get_variable_value(state, Ti_handle)
+                v = api.exchange.get_variable_value(state, v_handle)
+                d = api.exchange.get_variable_value(state, d_handle)
+                RHi = api.exchange.get_variable_value(state, RHi_handle)
+                
+                # the values are saved in a dictionary to compose the observation (or state)
+                s_cont_tp1 = [rad, Bw, To, Ti, v, d, RHi]
+                self.EnvConfig['last_observation'] = s_cont_tp1
+
+                """
+                CÁLCULO DE ENERGÍA, CONFORT Y RECOMPENSA
+                """
+                # handle for the energy consumption for cooling
+                q_supp_handle = api.exchange.get_meter_handle(state, 'Cooling:DistrictCooling')
+                q_supp = api.exchange.get_meter_value(state, q_supp_handle)
+
+                # The energy consumption e is equal to the q_supp value but in kWh not in J
+                e_tp1 = q_supp/(3.6*1000000)
+
+                #La recompensa es calculada a partir de la energía y los minutos de confort
+                if Ti > self.EnvConfig['T_SP'] + self.EnvConfig['dT_up'] or Ti < self.EnvConfig['T_SP'] - self.EnvConfig['dT_dn']:
+                    if RHi > self.EnvConfig['SP_RH']:
+                        r_temp = - self.EnvConfig['rho']*(Ti - self.EnvConfig['T_SP'])**2
+                        r_hr = - self.EnvConfig['psi']*(RHi - self.EnvConfig['SP_RH'])**2
+                    else:
+                        r_temp = - self.EnvConfig['rho']*(Ti - self.EnvConfig['T_SP'])**2
+                        r_hr = self.EnvConfig['psi'] * 10
+
+                elif RHi > self.EnvConfig['SP_RH']:
+                    r_temp = self.EnvConfig['rho'] * 10
+                    r_hr = - self.EnvConfig['psi']*(RHi - self.EnvConfig['SP_RH'])**2
+
+                else:
+                    r_temp = self.EnvConfig['rho'] * 10
+                    r_hr = self.EnvConfig['psi'] * 10
+                
+                if e_tp1 > 0:
+                    r_energia = - self.EnvConfig['beta']*e_tp1
+                else:
+                    r_energia = self.EnvConfig['beta']
+                
+                r_tp1 = r_energia + r_temp + r_hr
+
+                """
+                SE GRABAN LAS VARIABLES PARA EL TIEMPO t
+                """
+                if self.EnvConfig['first_time_step'] == False:
+                    self.log_returns(self.EnvConfig['episode'], r_tp1, {})
+
+
+                if self.EnvConfig['first_time_step'] == True:
+                    self.EnvConfig['first_time_step'] = False
+
+                """Se obtiene la acción de RLlib"""
+                print(self.observation_space.contains(s_cont_tp1))
+                a_tp1 = self.get_action(self.EnvConfig['episode'], s_cont_tp1)
+                
+                """
+                SE REALIZAN LAS ACCIONES EN EL SIMULADOR
+                """
+                '''Se solicitan los handles de cada una de las variables que se quiere controlar'''
+                # handle para el control de la persiana
+                ShadingControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Shadow_Control')
+                # handle para el control del aire acondicionado
+                HVACControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Aviability_Control')
+                # handle para el control de abertura de la ventana orientada al norte
+                VentN_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'VentN_Control')
+                # handle para el control de abertura de la ventana orientada al sur
+                VentS_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'VentS_Control')
+                
+                '''Se transforma la acción seleccionada a una lista de acciones'''
+                # la acción que se tomó corresponde a la del espacio de acciones que el agente tiene
+                # asignado, pero según si es un agente convencional, competidor o propuesto, ese espacio
+                # de acciones es diferente. Por esto, se implementa una desagregación de la acción en
+                # las que controlan cada componente de la vivienda según corresponda.
+
+                # El sistema propuesto controla todos los elementos del edificio, por lo que
+                # se transforma la acción seleccionada del espacio de acciones a una lista que
+                # asigna el control de cada uno de los elementos.  
+                a_tp1_lista = self.decimal_a_lista(a_tp1, 4)
+                a_tp1_aa = a_tp1_lista[0]
+                a_tp1_p = a_tp1_lista[1]
+                a_tp1_vn = a_tp1_lista[2]
+                a_tp1_vs = a_tp1_lista[3]
+                
+
+                '''Se ejecutan las acciones en el paso de tiempo actual'''
+                # Aquí se está enviando información al simulador, asignando las acciones en cada uno
+                # de los elementos accionables (en este caso se realiza a través de un calendario de
+                # disponibilidad)
+                api.exchange.set_actuator_value(state, HVACControlHandle, a_tp1_aa)
+                api.exchange.set_actuator_value(state, ShadingControlHandle, a_tp1_p)
+                api.exchange.set_actuator_value(state, VentN_ControlHandle, a_tp1_vn)
+                api.exchange.set_actuator_value(state, VentS_ControlHandle, a_tp1_vs)
 
 class _ExternalEnvEpisode:
     """
@@ -449,155 +582,6 @@ class _ExternalEnvEpisode:
         with self.results_avail_condition:
             self.data_queue.put_nowait(item)
             self.results_avail_condition.notify()
-
-
-def EP_exchange_function(state):
-        '''
-        # Callback function for EnergyPlus
-
-        Este método permite el intercambio de información (entrada y salida) entre el simulador
-        EnergyPlus y un ejecutor de decisiones. El objeto de la creación de este método es poder 
-        realizar aprendizaje automático sobre las decisiones de un edificio a partir de la utilización
-        de aprendizaje por refuerzos.
-        '''
-        # The variables of the experiment, case and episode can not be called in the method's variables
-        # and due that are called here as global variables.
-        # conf_experimento are those which no change in all the run. var_case_n are those which change only
-        # between configurations (ej. the learning rate tuning). var_step_t are those which change inside the
-        # episode by step times.
-
-        global EnvConfig, self_EPEnvEx
-
-        #Condición necesaria para leer las variables disponibles en EP a solicitar
-        if api.exchange.api_data_fully_ready(state):
-            
-            #Condición para que no se escriban los datos durante el periodo de calentamiento
-            if api.exchange.warmup_flag(state) == 0:
-                
-                """
-                LECTURA DE VARIABLES DE ESTADO (s_tp1)
-                """
-                '''Lectura de algunas variables'''
-                # num_time_steps_in_hour is used to compute the n-step_max in a episode and the quantity of
-                # minutes of comfort
-                num_time_steps_in_hour = api.exchange.num_time_steps_in_hour(state)
-                # time_step and hour are needed to obtain the radiation rad
-                # time step is based on data of EP and is in range between one hour
-                time_step = api.exchange.zone_time_step_number(state)
-                hour = api.exchange.hour(state)
-
-                '''Lectura de los handles'''
-                # Handles are needed before call the values that are inside them.
-                # hadle for the radiation in the plane of the windows
-                Bw_handle = api.exchange.get_variable_handle(state, "Surface Outside Face Incident Solar Radiation Rate per Area", "Zn001:Wall001:Win001")
-                # handle for the outside temperature
-                To_handle = api.exchange.get_variable_handle(state, "Site Outdoor Air Drybulb Temperature", "Environment")
-                # hadle for the inside (zone) temperature
-                Ti_handle = api.exchange.get_variable_handle(state, "Zone Mean Air Temperature", "Thermal Zone: Modelo_Simple")
-                # handle for wind speed in the site
-                v_handle = api.exchange.get_variable_handle(state, "Site Wind Speed", "Environment")
-                # handle for direction of the wind
-                d_handle = api.exchange.get_variable_handle(state, "Site Wind Direction", "Environment")
-                # handle for the inside relativ humidity
-                RHi_handle = api.exchange.get_variable_handle(state,"Zone Air Relative Humidity", "Thermal Zone: Modelo_Simple")
-
-                '''Lectura de las variables de estado'''
-                # Here the values of the handles are consulting
-                rad = api.exchange.today_weather_beam_solar_at_time(state, hour, time_step)
-                Bw = api.exchange.get_variable_value(state, Bw_handle)
-                To = api.exchange.get_variable_value(state, To_handle)
-                Ti = api.exchange.get_variable_value(state, Ti_handle)
-                v = api.exchange.get_variable_value(state, v_handle)
-                d = api.exchange.get_variable_value(state, d_handle)
-                RHi = api.exchange.get_variable_value(state, RHi_handle)
-                
-                # the values are saved in a dictionary to compose the observation (or state)
-                s_cont_tp1 = np.array([rad,Bw,To,Ti,v,d,RHi])
-                EnvConfig.update({'last_observation': s_cont_tp1})
-
-                """
-                CÁLCULO DE ENERGÍA, CONFORT Y RECOMPENSA
-                """
-                # handle for the energy consumption for cooling
-                q_supp_handle = api.exchange.get_meter_handle(state, 'Cooling:DistrictCooling')
-                q_supp = api.exchange.get_meter_value(state, q_supp_handle)
-
-                # The energy consumption e is equal to the q_supp value but in kWh not in J
-                e_tp1 = q_supp/(3.6*1000000)
-
-                #La recompensa es calculada a partir de la energía y los minutos de confort
-                if Ti > EnvConfig['T_SP'] + EnvConfig['dT_up'] or Ti < EnvConfig['T_SP'] - EnvConfig['dT_dn']:
-                    if RHi > EnvConfig['SP_RH']:
-                        r_temp = - EnvConfig['rho']*(Ti - EnvConfig['T_SP'])**2
-                        r_hr = - EnvConfig['psi']*(RHi - EnvConfig['SP_RH'])**2
-                    else:
-                        r_temp = - EnvConfig['rho']*(Ti - EnvConfig['T_SP'])**2
-                        r_hr = EnvConfig['psi'] * 10
-
-                elif RHi > EnvConfig['SP_RH']:
-                    r_temp = EnvConfig['rho'] * 10
-                    r_hr = - EnvConfig['psi']*(RHi - EnvConfig['SP_RH'])**2
-
-                else:
-                    r_temp = EnvConfig['rho'] * 10
-                    r_hr = EnvConfig['psi'] * 10
-                
-                if e_tp1 > 0:
-                    r_energia = - EnvConfig['beta']*e_tp1
-                else:
-                    r_energia = EnvConfig['beta']
-                
-                r_tp1 = r_energia + r_temp + r_hr
-
-                """
-                SE GRABAN LAS VARIABLES PARA EL TIEMPO t
-                """
-                if EnvConfig['first_time_step'] == False:
-                    EPExternalEnv.log_returns(self_EPEnvEx, episode_id=EnvConfig['episode'], reward=r_tp1, info={})
-
-                if EnvConfig['first_time_step'] == True:
-                    EnvConfig['first_time_step'] = False
-
-                """Se obtiene la acción de RLlib"""
-                a_tp1 = EPExternalEnv.get_action(self_EPEnvEx, EnvConfig['episode'], s_cont_tp1)
-                
-                """
-                SE REALIZAN LAS ACCIONES EN EL SIMULADOR
-                """
-                '''Se solicitan los handles de cada una de las variables que se quiere controlar'''
-                # handle para el control de la persiana
-                ShadingControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Shadow_Control')
-                # handle para el control del aire acondicionado
-                HVACControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Aviability_Control')
-                # handle para el control de abertura de la ventana orientada al norte
-                VentN_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'VentN_Control')
-                # handle para el control de abertura de la ventana orientada al sur
-                VentS_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'VentS_Control')
-                
-                '''Se transforma la acción seleccionada a una lista de acciones'''
-                # la acción que se tomó corresponde a la del espacio de acciones que el agente tiene
-                # asignado, pero según si es un agente convencional, competidor o propuesto, ese espacio
-                # de acciones es diferente. Por esto, se implementa una desagregación de la acción en
-                # las que controlan cada componente de la vivienda según corresponda.
-
-                # El sistema propuesto controla todos los elementos del edificio, por lo que
-                # se transforma la acción seleccionada del espacio de acciones a una lista que
-                # asigna el control de cada uno de los elementos.  
-                a_tp1_lista = EPExternalEnv.decimal_a_lista(a_tp1, 4)
-                a_tp1_aa = a_tp1_lista[0]
-                a_tp1_p = a_tp1_lista[1]
-                a_tp1_vn = a_tp1_lista[2]
-                a_tp1_vs = a_tp1_lista[3]
-                
-
-                '''Se ejecutan las acciones en el paso de tiempo actual'''
-                # Aquí se está enviando información al simulador, asignando las acciones en cada uno
-                # de los elementos accionables (en este caso se realiza a través de un calendario de
-                # disponibilidad)
-                api.exchange.set_actuator_value(state, HVACControlHandle, a_tp1_aa)
-                api.exchange.set_actuator_value(state, ShadingControlHandle, a_tp1_p)
-                api.exchange.set_actuator_value(state, VentN_ControlHandle, a_tp1_vn)
-                api.exchange.set_actuator_value(state, VentS_ControlHandle, a_tp1_vs)
 
 
 if "__main__" == __name__:
