@@ -1,18 +1,14 @@
 #!/usr/bin/env python
 """
-Example of running an external simulator (a simple CartPole env
-in this case) against an RLlib policy server listening on one or more
-HTTP-speaking port(s). See `cartpole_server.py` in this same directory for
+Running an external simulator against an RLlib policy server listening on one or more
+HTTP-speaking port(s). See `EPRLlib_server.py` in this same directory for
 how to start this server.
-
-This script will only create one single env altogether to illustrate
-that RLlib can run w/o needing an internalized environment.
 
 Setup:
 1) Start the policy server:
-    See `cartpole_server.py` on how to do this.
+    See `EPRLlib_server.py` on how to do this.
 2) Run this client:
-    $ python cartpole_client.py --inference-mode=local|remote --[other options]
+    $ python EPRLlib_client.py --inference-mode=local|remote --[other options]
       Use --help for help.
 
 In "local" inference-mode, the action computations are performed

@@ -1,21 +1,17 @@
 #!/usr/bin/env python
 """
-Example of running an RLlib policy server, allowing connections from
-external environment running clients. The server listens on
-(a simple CartPole env
-in this case) against an RLlib policy server listening on one or more
-HTTP-speaking ports. See `cartpole_client.py` in this same directory for how
+Running an RLlib policy server, allowing connections from external environment
+running clients. The server listens on against an RLlib policy server listening
+on one or more HTTP-speaking ports. See `EPRLlib_client.py` in this same directory for how
 to start any number of clients (after this server has been started).
 
-This script will not create any actual env to illustrate that RLlib can
-run w/o needing an internalized environment.
 
 Setup:
 1) Start this server:
-    $ python cartpole_server.py --num-workers --[other options]
+    $ python EPRLlib_server.py --num-workers --[other options]
       Use --help for help.
 2) Run n policy clients:
-    See `cartpole_client.py` on how to do this.
+    See `EPRLlib_client.py` on how to do this.
 
 The `num-workers` setting will allow you to distribute the incoming feed over n
 listen sockets (in this example, between 9900 and 990n with n=worker_idx-1).
