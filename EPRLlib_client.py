@@ -73,7 +73,7 @@ if __name__ == "__main__":
     # that only this following env and the loop below runs the entire
     # training process.
     env = EnergyPlus_external_env.EPExternalEnv(
-        action_space = Discrete(2),
+        action_space = Discrete(16),
         observation_space = Box(-np.Inf, np.Inf, (7,))
     )
 
@@ -85,12 +85,13 @@ if __name__ == "__main__":
         f"http://localhost:{args.port}", inference_mode=args.inference_mode
     )
 
-    # In the following, we will use our external environment (the CartPole
-    # env we created above) in connection with the PolicyClient to query
-    # actions (from the server if "remote"; if "local" we'll compute them
-    # on this client side), and send back observations and rewards.
+    # In the following, we will use our external environment in connection
+    # with the PolicyClient to query actions (from the server if "remote";
+    #  if "local" we'll compute them on this client side), and send back 
+    # observations and rewards.
 
     # Start a new episode.
+
     n = 0
     while n < 10000:
         env.run()
