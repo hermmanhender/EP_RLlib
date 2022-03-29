@@ -59,7 +59,7 @@ def get_cli_args():
     parser.add_argument(
         "--num-workers",
         type=int,
-        default=2,
+        default=4,
         help="The number of workers to use. Each worker will create "
         "its own listening socket for incoming experiences.",
     )
