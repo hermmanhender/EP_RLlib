@@ -19,7 +19,7 @@ You may connect more than one policy client to any open listen port.
 """
 
 import argparse
-import gym
+from gym import spaces
 import os
 
 import ray
@@ -59,7 +59,7 @@ def get_cli_args():
     parser.add_argument(
         "--num-workers",
         type=int,
-        default=2,
+        default=4,
         help="The number of workers to use. Each worker will create "
         "its own listening socket for incoming experiences.",
     )
@@ -73,7 +73,7 @@ def get_cli_args():
     # General args.
     parser.add_argument(
         "--run",
-        default="PPO",
+        default="DQN",
         choices=["DQN", "PPO"],
         help="The RLlib-registered algorithm to use.",
     )
@@ -96,7 +96,7 @@ def get_cli_args():
     parser.add_argument(
         "--stop-reward",
         type=float,
-        default=80.0,
+        default=8000.0,
         help="Reward at which we stop training.",
     )
     parser.add_argument(
@@ -149,8 +149,8 @@ if __name__ == "__main__":
         "env": None,
         # TODO: (sven) make these settings unnecessary and get the information
         #  about the env spaces from the client.
-        "observation_space": gym.spaces.Box(float("-inf"), float("inf"), (4,)),
-        "action_space": gym.spaces.Discrete(2),
+        "observation_space": spaces.Box(float("-inf"), float("inf"), (7,)),
+        "action_space": spaces.Discrete(16),
         # Use the `PolicyServerInput` to generate experiences.
         "input": _input,
         # Use n worker processes to listen on different ports.
