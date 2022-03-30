@@ -76,7 +76,7 @@ class environment():
 
         fecha = str(time.strftime('%y-%m-%d'))
         hora = str(time.strftime('%H-%M'))
-        config['directorio'] = config['ruta_base'] + '/' + fecha + '-'+ hora
+        config['directorio'] = self.ruta_resultados + '/' + fecha + '-'+ hora
         try:
             os.mkdir(config['directorio'])
             os.mkdir(config['directorio']+'/Resultados')
@@ -105,9 +105,10 @@ class environment():
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
-        output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]
-        pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
-        pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_comp.csv', mode="w", index=False, header=False)
+        #output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]
+        output = [('total_rew', 'total_ener', 'total_conf')]
+        #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
+        #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_comp.csv', mode="w", index=False, header=False)
         pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
           
         #config['directorio'] = EPExternalEnv.directorio(EPExternalEnv)
@@ -250,7 +251,16 @@ class environment():
                 # The energy consumption e is equal to the q_supp value but in kWh not in J
                 e_tp1 = q_supp/(3.6*1000000)
 
-                #La recompensa es calculada a partir de la energía y los minutos de confort
+                # Minutes comfort calculation
+                if Ti > (config["T_SP"] + config['dT_up']) or Ti < (config["T_SP"] - config['dT_dn']) or RHi > config['SP_RH']:
+                    c_tp1 = 0
+                elif Ti <= (config["T_SP"] + config['dT_up']) or Ti >= (config["T_SP"] - config['dT_dn']) or RHi <= config['SP_RH']:
+                    c_tp1 = 60/num_time_steps_in_hour
+                else:
+                    print("Comfort not founded.")
+                    c_tp1 = -1
+                
+                # La recompensa es calculada a partir de la energía y los minutos de confort
                 if Ti > config['T_SP'] + config['dT_up'] or Ti < config['T_SP'] - config['dT_dn']:
                     if RHi > config['SP_RH']:
                         r_temp = - config['rho']*(Ti - config['T_SP'])**2
@@ -277,6 +287,8 @@ class environment():
                 """
                 SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                 """
+                output = [(r_tp1, e_tp1, c_tp1)]
+                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
                 if config['first_time_step'] == False:
                     client.log_returns(config['episode'], r_tp1, {})
 
@@ -359,10 +371,15 @@ class environment():
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--no-train", action="store_true", help="Whether to disable training."
+    "--no-train",
+    action="store_true",
+    help="Whether to disable training."
 )
 parser.add_argument(
-    "--inference-mode", type=str, default="local", choices=["local", "remote"]
+    "--inference-mode",
+    type=str,
+    default="local",
+    choices=["local", "remote"]
 )
 parser.add_argument(
     "--off-policy",
@@ -377,7 +394,10 @@ parser.add_argument(
     help="Stop once the specified reward is reached.",
 )
 parser.add_argument(
-    "--port", type=int, default=9900, help="The port to use (on localhost)."
+    "--port",
+    type=int,
+    default=9900,
+    help="The port to use (on localhost)."
 )
 
 config = {'Folder_Output': '',
@@ -395,7 +415,7 @@ config = {'Folder_Output': '',
         'first_time_step': True,
         'directorio': '',
         'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
-        'ruta': 'A' # A-Notebook Lenovo, B-Computadora grupo/Notebook Asus
+        'ruta': 'B' # A-Notebook Lenovo, B-Computadora grupo/Notebook Asus
         }
 
 if __name__ == "__main__":
@@ -409,7 +429,7 @@ if __name__ == "__main__":
 
     n = 0
     while n < 10000:
-        print("Episode "+ str(n+1))
+        print("\nEpisode "+ str(n+1))
         environment.run(environment)
         n += 1
 

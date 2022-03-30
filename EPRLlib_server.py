@@ -43,7 +43,6 @@ def get_cli_args():
     """Create CLI parser and return parsed arguments"""
     parser = argparse.ArgumentParser()
 
-    # Example-specific args.
     parser.add_argument(
         "--port",
         type=int,
@@ -77,7 +76,11 @@ def get_cli_args():
         choices=["DQN", "PPO"],
         help="The RLlib-registered algorithm to use.",
     )
-    parser.add_argument("--num-cpus", type=int, default=3)
+    parser.add_argument(
+        "--num-cpus",
+        type=int,
+        default=3
+    )
     parser.add_argument(
         "--framework",
         choices=["tf", "tf2", "tfe", "torch"],
@@ -130,6 +133,7 @@ def get_cli_args():
 
 if __name__ == "__main__":
     args = get_cli_args()
+    
     ray.init()
 
     # `InputReader` generator (returns None if no input reader is needed on
@@ -146,6 +150,7 @@ if __name__ == "__main__":
         # No InputReader (PolicyServerInput) needed.
         else:
             return None
+
 
     # Trainer config. Note that this config is sent to the client only in case
     # the client needs to create its own policy copy for local inference.
