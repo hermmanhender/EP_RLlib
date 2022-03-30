@@ -289,6 +289,8 @@ class environment():
                 """
                 output = [(r_tp1, e_tp1, c_tp1)]
                 pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
+                print("Data saved.")
+                
                 if config['first_time_step'] == False:
                     client.log_returns(config['episode'], r_tp1, {})
 
