@@ -1,5 +1,6 @@
-#!/usr/bin/env python
 """
+# RLlib Server
+
 Running an RLlib policy server, allowing connections from external environment
 running clients. The server listens on against an RLlib policy server listening
 on one or more HTTP-speaking ports. See `EPRLlib_client.py` in this same directory for how
@@ -17,11 +18,21 @@ The `num-workers` setting will allow you to distribute the incoming feed over n
 listen sockets (in this example, between 9900 and 990n with n=worker_idx-1).
 You may connect more than one policy client to any open listen port.
 """
-
+# Importacion de la libreria argparse que sirve para la configuracion
+# de los parametros del Trainer y del servidor
 import argparse
+# Se importa spaces de gym para poder definir luego el tamaño de los espacios
+# de observaciones y acciones del entorno, ya que al utilizar un cliente
+# externo es necesario definirlo aqui en el servidor
 from gym import spaces
+# La libreria os se utilizara para la creacion de directorios donde se almacenaran
+# los archivos de datos y configuracion del experimento
 import os
-
+# Ray es la libreria principal de la cual se obtiene la preconfiguracion del 
+# servidor y los clientes.
+# Todos sus modulos luego importados son utilizados para la configuracion del servidor,
+# el que contiene a los Trainers, Policy y la herramienta Tune para hacer un tunning de
+# los hiperparametros
 import ray
 from ray import tune
 from ray.rllib.agents.dqn import DQNTrainer
@@ -30,17 +41,27 @@ from ray.rllib.env.policy_server_input import PolicyServerInput
 from ray.rllib.examples.custom_metrics_and_callbacks import MyCallbacks
 from ray.tune.logger import pretty_print
 
+# Se define la direccion del servidor. Se puede indicar un IP o bien con
+# el comando "localhost" definir el IP local, el cual lo busca automaticamente
 SERVER_ADDRESS = "localhost"
 # In this example, the user can run the policy server with
 # n workers, opening up listen ports 9900 - 990n (n = num_workers - 1)
 # to each of which different clients may connect.
 SERVER_BASE_PORT = 9900  # + worker-idx - 1
-
+# ¿?
 CHECKPOINT_FILE = "last_checkpoint_{}.out"
 
 
 def get_cli_args():
-    """Create CLI parser and return parsed arguments"""
+    """
+    # Trainer configuration
+    
+    Create CLI (Comand Line Interface) parser and return parsed arguments.
+    
+    They manage algorithm configuration, setup of the rollout workers and optimizer,
+    and collection of training metrics. Trainers also implement the Tune Trainable
+    API for easy experiment management.
+    """
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -58,7 +79,7 @@ def get_cli_args():
     parser.add_argument(
         "--num-workers",
         type=int,
-        default=4,
+        default=2,
         help="The number of workers to use. Each worker will create "
         "its own listening socket for incoming experiences.",
     )
@@ -84,11 +105,14 @@ def get_cli_args():
     parser.add_argument(
         "--framework",
         choices=["tf", "tf2", "tfe", "torch"],
-        default="tf",
+        default="tf2",
         help="The DL framework specifier.",
     )
     parser.add_argument(
-        "--stop-iters", type=int, default=200, help="Number of iterations to train."
+        "--stop-iters",
+        type=int,
+        default=200,
+        help="Number of iterations to train."
     )
     parser.add_argument(
         "--stop-timesteps",
@@ -120,11 +144,11 @@ def get_cli_args():
         help="Init Ray in local mode for easier debugging.",
     )
 
-    """parser.add_argument(
+    parser.add_argument(
         "--checkpoint-freq",
         default=1000,
         help="In order to save checkpoints from which to evaluate policies",
-    )"""
+    )
 
     args = parser.parse_args()
     print(f"Running with following CLI args: {args}")
@@ -132,8 +156,9 @@ def get_cli_args():
 
 
 if __name__ == "__main__":
+    # Se inicia la configuracion, la cual fue definida anteriormente
     args = get_cli_args()
-    
+    # Se inicia el servidor con ray
     ray.init()
 
     # `InputReader` generator (returns None if no input reader is needed on
@@ -242,5 +267,5 @@ if __name__ == "__main__":
             "timesteps_total": args.stop_timesteps,
             "episode_reward_mean": args.stop_reward,
         }
-
+        print("Se realiza un tuneo de los parametros.")
         tune.run(args.run, config=config, stop=stop, verbose=2, restore=checkpoint_path)
