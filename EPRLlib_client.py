@@ -124,7 +124,6 @@ class environment():
         forma local y asigna el momento en el que se hace el intercambio con la función de intercambio
         de información EP_exchange_function.
         """
-        config['episode'] = client.start_episode()
         # se establece un estado en el simulador (indispensable)
         state = api.state_manager.new_state()
         # se hace un reset del estado en el simulador para borrar cualquier archivo que pueda haber 
@@ -142,7 +141,7 @@ class environment():
             api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
         # se elimina el estado para evitar posibles errores en la memoria (opcional)(con la versión EP 960
         # esto arroja error)
-        client.end_episode(config['episode'], config['last_observation'])
+        
 
     @PublicAPI
     def random_run_date(self):
@@ -211,6 +210,10 @@ class environment():
                 # time step is based on data of EP and is in range between one hour
                 time_step = api.exchange.zone_time_step_number(state)
                 hour = api.exchange.hour(state)
+
+                # Se inicia el episodio en el servidor
+                if time_step + (hour * num_time_steps_in_hour) == 1:
+                    config['episode'] = client.start_episode()
 
                 '''Lectura de los handles'''
                 # Handles are needed before call the values that are inside them.
@@ -288,7 +291,7 @@ class environment():
                 SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                 """
                 output = [(r_tp1, e_tp1, c_tp1)]
-                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
+                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
                 print("Data saved.")
                 
                 if config['first_time_step'] == False:
@@ -369,6 +372,9 @@ class environment():
                 api.exchange.set_actuator_value(state, VentN_ControlHandle, a_tp1_vn)
                 api.exchange.set_actuator_value(state, VentS_ControlHandle, a_tp1_vs)
 
+                if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
+                    client.end_episode(config['episode'], config['last_observation'])
+
 
 
 parser = argparse.ArgumentParser()
@@ -417,7 +423,7 @@ config = {'Folder_Output': '',
         'first_time_step': True,
         'directorio': '',
         'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
-        'ruta': 'B' # A-Notebook Lenovo, B-Computadora grupo/Notebook Asus
+        'ruta': 'A' # A-Notebook Lenovo, B-Computadora grupo/Notebook Asus
         }
 
 if __name__ == "__main__":

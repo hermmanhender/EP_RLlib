@@ -120,11 +120,11 @@ def get_cli_args():
         help="Init Ray in local mode for easier debugging.",
     )
 
-    parser.add_argument(
+    """parser.add_argument(
         "--checkpoint-freq",
         default=1000,
         help="In order to save checkpoints from which to evaluate policies",
-    )
+    )"""
 
     args = parser.parse_args()
     print(f"Running with following CLI args: {args}")
