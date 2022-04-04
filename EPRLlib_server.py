@@ -150,6 +150,12 @@ def get_cli_args():
         help="In order to save checkpoints from which to evaluate policies",
     )
 
+    parser.add_argument(
+        "--num_gpus",
+        default=1,
+        help="In order to use the GPU. If set in 0, you use the CPU",
+    )
+
     args = parser.parse_args()
     print(f"Running with following CLI args: {args}")
     return args
