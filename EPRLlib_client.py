@@ -70,13 +70,16 @@ class environment():
         elif config['ruta'] == "B":
             config['ruta_base'] = 'D:/GitHub/RLforEP/RLforEP_vent'
             self.ruta_resultados = 'D:/Resultados_RLforEP'
+        elif config['ruta'] == "C":
+            config['ruta_base'] = 'D:/GitHub/RLforEP/RLforEP'
+            self.ruta_resultados = 'D:/Resultados_RLforEP'
         else:
             config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/RLforEP'
             self.ruta_resultados = 'C:/Users/grhen/Documents/RLforEP_Resultados'
 
         fecha = str(time.strftime('%y-%m-%d'))
         hora = str(time.strftime('%H-%M'))
-        config['directorio'] = config['ruta_base'] + '/' + fecha + '-'+ hora
+        config['directorio'] = self.ruta_resultados + '/' + fecha + '-'+ hora
         try:
             os.mkdir(config['directorio'])
             os.mkdir(config['directorio']+'/Resultados')
@@ -105,9 +108,10 @@ class environment():
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
-        output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]
-        pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
-        pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_comp.csv', mode="w", index=False, header=False)
+        #output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]
+        output = [('total_rew', 'total_ener', 'total_conf')]
+        #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
+        #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_comp.csv', mode="w", index=False, header=False)
         pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
           
         #config['directorio'] = EPExternalEnv.directorio(EPExternalEnv)
@@ -123,7 +127,6 @@ class environment():
         forma local y asigna el momento en el que se hace el intercambio con la función de intercambio
         de información EP_exchange_function.
         """
-        config['episode'] = client.start_episode()
         # se establece un estado en el simulador (indispensable)
         state = api.state_manager.new_state()
         # se hace un reset del estado en el simulador para borrar cualquier archivo que pueda haber 
@@ -131,9 +134,14 @@ class environment():
         api.state_manager.reset_state(state)
         # se establece el punto de llamado para el intercambio de información con el simulador
         api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, self.EP_exchange_function)
-        
-        month, day = self.random_run_date(self)
-        config['epJSON_file'] = self.episode_epJSON(self, month, day)
+        # Se establece un dia random como periodo de duracion del episodio
+        #month, day = self.random_run_date(self)
+        # Si se quiere definir un periodo determinado, utilizar la siguiente parte del codigo
+        month = 1
+        day = 1
+        final_month = 3
+        final_day = 31
+        config['epJSON_file'] = self.episode_epJSON(self, month, day, final_month, final_day)
         # se corre el simulador
         try:
             api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
@@ -141,7 +149,7 @@ class environment():
             api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
         # se elimina el estado para evitar posibles errores en la memoria (opcional)(con la versión EP 960
         # esto arroja error)
-        client.end_episode(config['episode'], config['last_observation'])
+        
 
     @PublicAPI
     def random_run_date(self):
@@ -156,7 +164,7 @@ class environment():
         return month, day
 
     @PublicAPI
-    def episode_epJSON(self, month, day):
+    def episode_epJSON(self, init_month, init_day, final_month=0, final_day=0):
         """
         Este toma un archivo epJSON y lo modifica. Luego retorna la ruta del archivo modificado.
         Las modificaciones efectuadas son:
@@ -164,11 +172,16 @@ class environment():
             2. Cambio del día a ejecutar.
             3. Cambio en los path de los calendarios de disponibilidad de los objetos accionables en la vivienda.
         """
+        if final_month == 0:
+            final_month = init_month
+        if final_day == 0:
+            final_day = init_day
+        
         epJSON_file_old = MainFunctions.MainFunctions.read_epjson(config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
-        LocationClimate.RunPeriod.begin_day_of_month(epJSON_file_old, "DDMM", day)
-        LocationClimate.RunPeriod.begin_month(epJSON_file_old, "DDMM", month)
-        LocationClimate.RunPeriod.end_day_of_month(epJSON_file_old, "DDMM", day)
-        LocationClimate.RunPeriod.end_month(epJSON_file_old, "DDMM", month)
+        LocationClimate.RunPeriod.begin_day_of_month(epJSON_file_old, "DDMM", init_day)
+        LocationClimate.RunPeriod.begin_month(epJSON_file_old, "DDMM", init_month)
+        LocationClimate.RunPeriod.end_day_of_month(epJSON_file_old, "DDMM", final_day)
+        LocationClimate.RunPeriod.end_month(epJSON_file_old, "DDMM", final_month)
         Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control", config['directorio'] + '/Resultados/RL_Aviability_Sch_0.csv')
         Schedules.Schedule_File.file_name(epJSON_file_old, "Shadow_Control", config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
         Schedules.Schedule_File.file_name(epJSON_file_old, "VentN_Control", config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
@@ -211,6 +224,10 @@ class environment():
                 time_step = api.exchange.zone_time_step_number(state)
                 hour = api.exchange.hour(state)
 
+                # Se inicia el episodio en el servidor
+                if time_step + (hour * num_time_steps_in_hour) == 1:
+                    config['episode'] = client.start_episode()
+
                 '''Lectura de los handles'''
                 # Handles are needed before call the values that are inside them.
                 # hadle for the radiation in the plane of the windows
@@ -250,7 +267,16 @@ class environment():
                 # The energy consumption e is equal to the q_supp value but in kWh not in J
                 e_tp1 = q_supp/(3.6*1000000)
 
-                #La recompensa es calculada a partir de la energía y los minutos de confort
+                # Minutes comfort calculation
+                if Ti > (config["T_SP"] + config['dT_up']) or Ti < (config["T_SP"] - config['dT_dn']) or RHi > config['SP_RH']:
+                    c_tp1 = 0
+                elif Ti <= (config["T_SP"] + config['dT_up']) or Ti >= (config["T_SP"] - config['dT_dn']) or RHi <= config['SP_RH']:
+                    c_tp1 = 60/num_time_steps_in_hour
+                else:
+                    print("Comfort not founded.")
+                    c_tp1 = -1
+                
+                # La recompensa es calculada a partir de la energía y los minutos de confort
                 if Ti > config['T_SP'] + config['dT_up'] or Ti < config['T_SP'] - config['dT_dn']:
                     if RHi > config['SP_RH']:
                         r_temp = - config['rho']*(Ti - config['T_SP'])**2
@@ -277,6 +303,10 @@ class environment():
                 """
                 SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                 """
+                output = [(r_tp1, e_tp1, c_tp1)]
+                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
+                print("Data saved.")
+                
                 if config['first_time_step'] == False:
                     client.log_returns(config['episode'], r_tp1, {})
 
@@ -355,14 +385,22 @@ class environment():
                 api.exchange.set_actuator_value(state, VentN_ControlHandle, a_tp1_vn)
                 api.exchange.set_actuator_value(state, VentS_ControlHandle, a_tp1_vs)
 
+                if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
+                    client.end_episode(config['episode'], config['last_observation'])
+
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--no-train", action="store_true", help="Whether to disable training."
+    "--no-train",
+    action="store_true",
+    help="Whether to disable training."
 )
 parser.add_argument(
-    "--inference-mode", type=str, default="local", choices=["local", "remote"]
+    "--inference-mode",
+    type=str,
+    default="local",
+    choices=["local", "remote"]
 )
 parser.add_argument(
     "--off-policy",
@@ -377,7 +415,10 @@ parser.add_argument(
     help="Stop once the specified reward is reached.",
 )
 parser.add_argument(
-    "--port", type=int, default=9900, help="The port to use (on localhost)."
+    "--port",
+    type=int,
+    default=9900,
+    help="The port to use (on localhost)."
 )
 
 config = {'Folder_Output': '',
@@ -395,7 +436,7 @@ config = {'Folder_Output': '',
         'first_time_step': True,
         'directorio': '',
         'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
-        'ruta': 'A' # A-Notebook Lenovo, B-Computadora grupo/Notebook Asus
+        'ruta': 'C' # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
         }
 
 if __name__ == "__main__":
@@ -409,7 +450,7 @@ if __name__ == "__main__":
 
     n = 0
     while n < 10000:
-        print("Episode "+ str(n+1))
+        print("\nEpisode "+ str(n+1))
         environment.run(environment)
         n += 1
 
