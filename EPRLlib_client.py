@@ -70,6 +70,9 @@ class environment():
         elif config['ruta'] == "B":
             config['ruta_base'] = 'D:/GitHub/RLforEP/RLforEP_vent'
             self.ruta_resultados = 'D:/Resultados_RLforEP'
+        elif config['ruta'] == "C":
+            config['ruta_base'] = 'D:/GitHub/RLforEP/RLforEP'
+            self.ruta_resultados = 'D:/Resultados_RLforEP'
         else:
             config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/RLforEP'
             self.ruta_resultados = 'C:/Users/grhen/Documents/RLforEP_Resultados'
@@ -132,9 +135,14 @@ class environment():
         api.state_manager.reset_state(state)
         # se establece el punto de llamado para el intercambio de información con el simulador
         api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, self.EP_exchange_function)
-        
-        month, day = self.random_run_date(self)
-        config['epJSON_file'] = self.episode_epJSON(self, month, day)
+        # Se establece un dia random como periodo de duracion del episodio
+        #month, day = self.random_run_date(self)
+        # Si se quiere definir un periodo determinado, utilizar la siguiente parte del codigo
+        month = 1
+        day = 1
+        final_month = 3
+        final_day = 31
+        config['epJSON_file'] = self.episode_epJSON(self, month, day, final_month, final_day)
         # se corre el simulador
         try:
             api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
@@ -157,7 +165,7 @@ class environment():
         return month, day
 
     @PublicAPI
-    def episode_epJSON(self, month, day):
+    def episode_epJSON(self, init_month, init_day, final_month=0, final_day=0):
         """
         Este toma un archivo epJSON y lo modifica. Luego retorna la ruta del archivo modificado.
         Las modificaciones efectuadas son:
@@ -165,11 +173,16 @@ class environment():
             2. Cambio del día a ejecutar.
             3. Cambio en los path de los calendarios de disponibilidad de los objetos accionables en la vivienda.
         """
+        if final_month == 0:
+            final_month = init_month
+        if final_day == 0:
+            final_day = init_day
+        
         epJSON_file_old = MainFunctions.MainFunctions.read_epjson(config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
-        LocationClimate.RunPeriod.begin_day_of_month(epJSON_file_old, "DDMM", day)
-        LocationClimate.RunPeriod.begin_month(epJSON_file_old, "DDMM", month)
-        LocationClimate.RunPeriod.end_day_of_month(epJSON_file_old, "DDMM", day)
-        LocationClimate.RunPeriod.end_month(epJSON_file_old, "DDMM", month)
+        LocationClimate.RunPeriod.begin_day_of_month(epJSON_file_old, "DDMM", init_day)
+        LocationClimate.RunPeriod.begin_month(epJSON_file_old, "DDMM", init_month)
+        LocationClimate.RunPeriod.end_day_of_month(epJSON_file_old, "DDMM", final_day)
+        LocationClimate.RunPeriod.end_month(epJSON_file_old, "DDMM", final_month)
         Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control", config['directorio'] + '/Resultados/RL_Aviability_Sch_0.csv')
         Schedules.Schedule_File.file_name(epJSON_file_old, "Shadow_Control", config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
         Schedules.Schedule_File.file_name(epJSON_file_old, "VentN_Control", config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
@@ -426,7 +439,7 @@ config = {'Folder_Output': '',
         'first_time_step': True,
         'directorio': '',
         'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
-        'ruta': 'A' # A-Notebook Lenovo, B-Computadora grupo/Notebook Asus
+        'ruta': 'C' # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
         }
 
 if __name__ == "__main__":
