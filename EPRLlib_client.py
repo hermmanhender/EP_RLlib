@@ -36,7 +36,7 @@ In either case, the user of PolicyClient must:
 
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/EP_RLlib')
-sys.path.insert(0, 'C:/EnergyPlusV9-5-0')
+sys.path.insert(0, 'C:/EnergyPlusV22-1-0')
 from pyenergyplus.api import EnergyPlusAPI
 api = EnergyPlusAPI()
 
@@ -96,10 +96,11 @@ class environment():
         shutil.copy(config['ruta_base'] + '/experimento_parametros.json', config['directorio'] + '/Resultados/experimento_parametros.json')
         
         # Para versión 950
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_vent_mV950_model2.epJSON', config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
+        #shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_vent_mV950_model2.epJSON', config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
         # Para versión 960
         #shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_vent_m.epJSON', config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
-        
+        # Para versión 2210
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_vent_m_V2210.epJSON', config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
         shutil.copy(config['ruta_base'] + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', config['directorio'] + '/Resultados/Observatorio-hour_2.epw')
 
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
@@ -305,7 +306,6 @@ class environment():
                 """
                 output = [(r_tp1, e_tp1, c_tp1)]
                 pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
-                print("Data saved.")
                 
                 if config['first_time_step'] == False:
                     client.log_returns(config['episode'], r_tp1, {})
@@ -387,6 +387,9 @@ class environment():
 
                 if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
                     client.end_episode(config['episode'], config['last_observation'])
+                    output = [("episode_end", "episode_end", "episode_end")]
+                    pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
+                
 
 
 

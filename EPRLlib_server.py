@@ -146,7 +146,7 @@ def get_cli_args():
 
     parser.add_argument(
         "--checkpoint-freq",
-        default=1000,
+        default=2400,
         help="In order to save checkpoints from which to evaluate policies",
     )
 
