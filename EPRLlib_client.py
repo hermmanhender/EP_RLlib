@@ -439,7 +439,7 @@ config = {'Folder_Output': '',
         'first_time_step': True,
         'directorio': '',
         'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
-        'ruta': 'C' # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
+        'ruta': 'A' # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
         }
 
 if __name__ == "__main__":
