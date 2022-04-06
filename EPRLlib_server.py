@@ -79,7 +79,7 @@ def get_cli_args():
     parser.add_argument(
         "--num-workers",
         type=int,
-        default=2,
+        default=4,
         help="The number of workers to use. Each worker will create "
         "its own listening socket for incoming experiences.",
     )
@@ -100,24 +100,24 @@ def get_cli_args():
     parser.add_argument(
         "--num-cpus",
         type=int,
-        default=3
+        default=4
     )
     parser.add_argument(
         "--framework",
         choices=["tf", "tf2", "tfe", "torch"],
-        default="tf2",
+        default="tf",
         help="The DL framework specifier.",
     )
     parser.add_argument(
         "--stop-iters",
         type=int,
-        default=200,
+        default=480,
         help="Number of iterations to train."
     )
     parser.add_argument(
         "--stop-timesteps",
         type=int,
-        default=500000,
+        default=5000000,
         help="Number of timesteps to train.",
     )
     parser.add_argument(
@@ -152,7 +152,7 @@ def get_cli_args():
 
     parser.add_argument(
         "--num_gpus",
-        default=1,
+        default=0,
         help="In order to use the GPU. If set in 0, you use the CPU",
     )
 
