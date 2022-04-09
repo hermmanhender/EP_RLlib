@@ -41,6 +41,7 @@ from pyenergyplus.api import EnergyPlusAPI
 api = EnergyPlusAPI()
 
 from IDF_tool import Schedules, LocationClimate, MainFunctions
+import Control
 import time
 import os
 import shutil
@@ -48,16 +49,11 @@ import pandas as pd
 import argparse
 import numpy as np
 
-from ray.rllib.utils.annotations import PublicAPI
 
-from ray.rllib.env.policy_client import PolicyClient
-
-@PublicAPI
 class environment():
 
     global client, config
 
-    @PublicAPI
     def __init__(self):
         """
         Se establece la ruta base de los datos del programa
@@ -79,8 +75,7 @@ class environment():
 
         fecha = str(time.strftime('%y-%m-%d'))
         hora = str(time.strftime('%H-%M'))
-        caso = config['nombre_caso']
-        config['directorio'] = self.ruta_resultados + '/' + fecha + '-'+ hora + '_caso '+ caso
+        config['directorio'] = self.ruta_resultados + '/' + fecha + '-'+ hora
         try:
             os.mkdir(config['directorio'])
             os.mkdir(config['directorio']+'/Resultados')
@@ -122,7 +117,7 @@ class environment():
         config['Weather_file'] = config['directorio'] + '/Resultados/Observatorio-hour_2.epw'
         config['epJSON_file'] = config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON'
 
-    @PublicAPI
+    
     def run(self):
         """
         Este método establece la configuración necesaria para ejecutar el simulador EnergyPlus de 
@@ -153,7 +148,7 @@ class environment():
         # esto arroja error)
         
 
-    @PublicAPI
+    
     def random_run_date(self):
         month = int(np.random.randint(1, 13, 1))
         if month == 1 or month == 3 or month == 5 or month == 7 or month == 8 or month == 10 or month == 12:
@@ -165,7 +160,7 @@ class environment():
 
         return month, day
 
-    @PublicAPI
+    
     def episode_epJSON(self, init_month, init_day, final_month=0, final_day=0):
         """
         Este toma un archivo epJSON y lo modifica. Luego retorna la ruta del archivo modificado.
@@ -225,10 +220,6 @@ class environment():
                 # time step is based on data of EP and is in range between one hour
                 time_step = api.exchange.zone_time_step_number(state)
                 hour = api.exchange.hour(state)
-
-                # Se inicia el episodio en el servidor
-                if time_step + (hour * num_time_steps_in_hour) == 1:
-                    config['episode'] = client.start_episode()
 
                 '''Lectura de los handles'''
                 # Handles are needed before call the values that are inside them.
@@ -308,15 +299,13 @@ class environment():
                 output = [(r_tp1, e_tp1, c_tp1)]
                 pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
                 
-                if config['first_time_step'] == False:
-                    client.log_returns(config['episode'], r_tp1, {})
 
 
                 if config['first_time_step'] == True:
                     config['first_time_step'] = False
 
                 """Se obtiene la acción de RLlib"""
-                a_tp1 = client.get_action(config['episode'], s_cont_tp1)
+                a_tp1 = Control.
                 
                 """
                 SE REALIZAN LAS ACCIONES EN EL SIMULADOR
@@ -387,43 +376,9 @@ class environment():
                 api.exchange.set_actuator_value(state, VentS_ControlHandle, a_tp1_vs)
 
                 if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
-                    client.end_episode(config['episode'], config['last_observation'])
                     output = [("episode_end", "episode_end", "episode_end")]
                     pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
                 
-
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--no-train",
-    action="store_true",
-    help="Whether to disable training."
-)
-parser.add_argument(
-    "--inference-mode",
-    type=str,
-    default="local",
-    choices=["local", "remote"]
-)
-parser.add_argument(
-    "--off-policy",
-    action="store_true",
-    help="Whether to compute random actions instead of on-policy "
-    "(Policy-computed) ones.",
-)
-parser.add_argument(
-    "--stop-reward",
-    type=float,
-    default=9999,
-    help="Stop once the specified reward is reached.",
-)
-parser.add_argument(
-    "--port",
-    type=int,
-    default=9900,
-    help="The port to use (on localhost)."
-)
 
 config = {'Folder_Output': '',
         'Weather_file': '',
@@ -434,10 +389,9 @@ config = {'Folder_Output': '',
         'dT_up': 1.,
         'dT_dn': 1.,
         'SP_RH': 70.,
-        'nombre_caso': "AD", # Se utiliza para identificar la carpeta donde se guardan los datos
-        'rho': 0.5, # Temperatura: default: 0.25
-        'beta': 20, # Energía: default: 20
-        'psi': 0.005, # Humedad relativa: default: 0.005
+        'rho': 0.25,
+        'beta': 20,
+        'psi': 0.005,
         'first_time_step': True,
         'directorio': '',
         'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
@@ -445,18 +399,8 @@ config = {'Folder_Output': '',
         }
 
 if __name__ == "__main__":
-    args = parser.parse_args()
-
-    client = PolicyClient(
-        f"http://localhost:{args.port}", inference_mode=args.inference_mode
-        )
     
     environment()
 
-    n = 0
-    while n < 10000:
-        print("\nEpisode "+ str(n+1))
-        environment.run(environment)
-        n += 1
-
-    
+    print("\nConventional Episode")
+    environment.run(environment)    

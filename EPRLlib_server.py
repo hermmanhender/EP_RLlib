@@ -100,7 +100,7 @@ def get_cli_args():
     parser.add_argument(
         "--num-cpus",
         type=int,
-        default=4
+        default=8
     )
     parser.add_argument(
         "--framework",
