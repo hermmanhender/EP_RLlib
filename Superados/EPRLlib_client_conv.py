@@ -41,7 +41,7 @@ from pyenergyplus.api import EnergyPlusAPI
 api = EnergyPlusAPI()
 
 from IDF_tool import Schedules, LocationClimate, MainFunctions
-import Control
+import Superados.Control as Control
 import time
 import os
 import shutil

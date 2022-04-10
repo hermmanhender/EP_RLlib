@@ -1,7 +1,7 @@
 from ray.tune import register_env
 from ray.rllib.agents.dqn import DQNTrainer
 from gym import spaces
-from EPExternalEnv import ExternalEnv
+from Superados.EPExternalEnv import ExternalEnv
 
 YourExternalEnv = ExternalEnv
 register_env("my_env",

@@ -30,7 +30,7 @@ from ray.tune.registry import register_env
 
 from gym.spaces import Discrete, Box
 
-from EnergyPlus_external_env import EPExternalEnv
+from Superados.EnergyPlus_external_env import EPExternalEnv
 
 def env_creator():
     action_space = Discrete(2)
