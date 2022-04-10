@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 """
+# EPRLlib_client (ExternalEnv)
+
 Running an external simulator against an RLlib policy server listening on one or more
 HTTP-speaking port(s). See `EPRLlib_server.py` in this same directory for
 how to start this server.
