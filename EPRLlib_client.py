@@ -279,26 +279,27 @@ class environment():
                     c_tp1 = -1
                 
                 # La recompensa es calculada a partir de la energía y los minutos de confort
+                # Se evalúa el confort higro-térmico
                 if Ti > config['T_SP'] + config['dT_up'] or Ti < config['T_SP'] - config['dT_dn']:
                     if RHi > config['SP_RH']:
-                        r_temp = - config['rho']*(Ti - config['T_SP'])**2
-                        r_hr = - config['psi']*(RHi - config['SP_RH'])**2
+                        r_temp = - config['rho']*(Ti - config['T_SP'])**2 # penalización por temperatura
+                        r_hr = - config['psi']*(RHi - config['SP_RH'])**2 # penalización por humedad
                     else:
-                        r_temp = - config['rho']*(Ti - config['T_SP'])**2
-                        r_hr = config['psi'] * 10
+                        r_temp = - config['rho']*(Ti - config['T_SP'])**2 # penalización por temperatura
+                        r_hr = config['psi'] * 10 # recompensa por humedad
 
                 elif RHi > config['SP_RH']:
-                    r_temp = config['rho'] * 10
-                    r_hr = - config['psi']*(RHi - config['SP_RH'])**2
+                    r_temp = config['rho'] * 10 # recompensa por temperatura
+                    r_hr = - config['psi']*(RHi - config['SP_RH'])**2 # penalización por humedad
 
                 else:
-                    r_temp = config['rho'] * 10
-                    r_hr = config['psi'] * 10
-                
+                    r_temp = config['rho'] * 10 # recompensa por temperatura
+                    r_hr = config['psi'] * 10 # recompensa por humedad
+                # Se evalúa el uso de energía
                 if e_tp1 > 0:
-                    r_energia = - config['beta']*e_tp1
+                    r_energia = - config['beta']*e_tp1 # penalización por energía
                 else:
-                    r_energia = config['beta']
+                    r_energia = config['beta'] # recompensa por energía
                 
                 r_tp1 = r_energia + r_temp + r_hr
 
@@ -434,9 +435,9 @@ config = {'Folder_Output': '',
         'dT_up': 1.,
         'dT_dn': 1.,
         'SP_RH': 70.,
-        'nombre_caso': "AD", # Se utiliza para identificar la carpeta donde se guardan los datos
-        'rho': 0.5, # Temperatura: default: 0.25
-        'beta': 20, # Energía: default: 20
+        'nombre_caso': "BC", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'rho': 0.25, # Temperatura: default: 0.25
+        'beta': 5, # Energía: default: 20
         'psi': 0.005, # Humedad relativa: default: 0.005
         'first_time_step': True,
         'directorio': '',
