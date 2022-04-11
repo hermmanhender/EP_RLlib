@@ -437,14 +437,14 @@ config = {'Folder_Output': '',
         'dT_up': 1.,
         'dT_dn': 1.,
         'SP_RH': 70.,
-        'nombre_caso': "BD", # Se utiliza para identificar la carpeta donde se guardan los datos
-        'rho': 0.25, # Temperatura: default: 0.25
-        'beta': 40, # Energía: default: 20
-        'psi': 0.005, # Humedad relativa: default: 0.005
+        'nombre_caso': "DB", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'rho': 10, # Temperatura: default: 0.25
+        'beta': 1, # Energía: default: 20
+        'psi': 5, # Humedad relativa: default: 0.005
         'first_time_step': True,
         'directorio': '',
         'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
-        'ruta': 'A' # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
+        'ruta': 'C' # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
         }
 
 if __name__ == "__main__":

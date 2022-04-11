@@ -40,6 +40,7 @@ from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.env.policy_server_input import PolicyServerInput
 from ray.rllib.examples.custom_metrics_and_callbacks import MyCallbacks
 from ray.tune.logger import pretty_print
+import numpy as np
 
 # Se define la direccion del servidor. Se puede indicar un IP o bien con
 # el comando "localhost" definir el IP local, el cual lo busca automaticamente
@@ -152,7 +153,7 @@ def get_cli_args():
 
     parser.add_argument(
         "--num_gpus",
-        default=0,
+        default=1,
         help="In order to use the GPU. If set in 0, you use the CPU",
     )
 
@@ -243,6 +244,12 @@ if __name__ == "__main__":
     if args.no_tune:
         if args.run == "DQN":
             trainer = DQNTrainer(config=config)
+            model = trainer.get_policy().model
+            model.variables()
+            model_out = model.from_batch({"obs": np.array([[0.1, 0.2, 0.3, 0.4]])})
+            model.base_model.summary()
+            model.get_q_value_distributions(model_out)
+            model.q_value_head.summary()
         else:
             trainer = PPOTrainer(config=config)
 
