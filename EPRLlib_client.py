@@ -437,9 +437,9 @@ config = {'Folder_Output': '',
         'dT_up': 1.,
         'dT_dn': 1.,
         'SP_RH': 70.,
-        'nombre_caso': "BC", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'nombre_caso': "BD", # Se utiliza para identificar la carpeta donde se guardan los datos
         'rho': 0.25, # Temperatura: default: 0.25
-        'beta': 5, # Energía: default: 20
+        'beta': 40, # Energía: default: 20
         'psi': 0.005, # Humedad relativa: default: 0.005
         'first_time_step': True,
         'directorio': '',
