@@ -438,9 +438,9 @@ config = {'Folder_Output': '',
         'dT_dn': 1.,
         'SP_RH': 70.,
         'nombre_caso': "DB", # Se utiliza para identificar la carpeta donde se guardan los datos
-        'rho': 10, # Temperatura: default: 0.25
+        'rho': 0.8, # Temperatura: default: 0.25
         'beta': 1, # Energía: default: 20
-        'psi': 5, # Humedad relativa: default: 0.005
+        'psi': 0.01, # Humedad relativa: default: 0.005
         'first_time_step': True,
         'directorio': '',
         'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
