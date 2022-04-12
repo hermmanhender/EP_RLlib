@@ -113,7 +113,7 @@ class environment():
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
         #output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]
-        output = [('state', 'action', 'total_rew', 'total_ener', 'total_conf')]
+        output = [('rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_aa', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
         #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
         #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_comp.csv', mode="w", index=False, header=False)
         pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
@@ -316,12 +316,6 @@ class environment():
                 a_tp1 = client.get_action(config['episode'], s_cont_tp1)
                 
                 """
-                SE GRABAN LAS VARIABLES PARA EL TIEMPO t
-                """
-                output = [(rad, Bw, To, Ti, v, d, RHi, a_tp1, r_tp1, e_tp1, c_tp1)]
-                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
-                
-                """
                 SE REALIZAN LAS ACCIONES EN EL SIMULADOR
                 """
                 '''Se solicitan los handles de cada una de las variables que se quiere controlar'''
@@ -378,7 +372,13 @@ class environment():
                 a_tp1_p = a_tp1_lista[1]
                 a_tp1_vn = a_tp1_lista[2]
                 a_tp1_vs = a_tp1_lista[3]
-                
+
+                """
+                SE GRABAN LAS VARIABLES PARA EL TIEMPO t
+                """
+                output = [(rad, Bw, To, Ti, v, d, RHi, a_tp1, a_tp1_aa, a_tp1_p, a_tp1_vn, a_tp1_vs, r_tp1, e_tp1, c_tp1)]
+                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
+                                
 
                 '''Se ejecutan las acciones en el paso de tiempo actual'''
                 # Aquí se está enviando información al simulador, asignando las acciones en cada uno
