@@ -318,7 +318,7 @@ class environment():
                 """
                 SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                 """
-                output = [(s_cont_tp1, a_tp1, r_tp1, e_tp1, c_tp1)]
+                output = [(rad, Bw, To, Ti, v, d, RHi, a_tp1, r_tp1, e_tp1, c_tp1)]
                 pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
                 
                 """
@@ -391,7 +391,7 @@ class environment():
 
                 if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
                     client.end_episode(config['episode'], config['last_observation'])
-                    output = [("episode_end", "episode_end", "episode_end")]
+                    output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
                     pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
                 
 
