@@ -113,7 +113,7 @@ class environment():
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
         #output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]
-        output = [('total_rew', 'total_ener', 'total_conf')]
+        output = [('rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_aa', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
         #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
         #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_comp.csv', mode="w", index=False, header=False)
         pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
@@ -272,9 +272,9 @@ class environment():
                 e_tp1 = q_supp/(3.6*1000000)
 
                 # Minutes comfort calculation
-                if Ti > (config["T_SP"] + config['dT_up']) or Ti < (config["T_SP"] - config['dT_dn']) or RHi > config['SP_RH']:
+                if Ti > (config["T_SP"] + config['dT_up']) or Ti < (config["T_SP"] - config['dT_dn']): # or RHi > config['SP_RH']:
                     c_tp1 = 0
-                elif Ti <= (config["T_SP"] + config['dT_up']) or Ti >= (config["T_SP"] - config['dT_dn']) or RHi <= config['SP_RH']:
+                elif Ti <= (config["T_SP"] + config['dT_up']) or Ti >= (config["T_SP"] - config['dT_dn']): # or RHi <= config['SP_RH']:
                     c_tp1 = 60/num_time_steps_in_hour
                 else:
                     print("Comfort not founded.")
@@ -305,12 +305,6 @@ class environment():
                 
                 r_tp1 = r_energia + r_temp + r_hr
 
-                """
-                SE GRABAN LAS VARIABLES PARA EL TIEMPO t
-                """
-                output = [(r_tp1, e_tp1, c_tp1)]
-                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
-                
                 if config['first_time_step'] == False:
                     client.log_returns(config['episode'], r_tp1, {})
 
@@ -378,7 +372,13 @@ class environment():
                 a_tp1_p = a_tp1_lista[1]
                 a_tp1_vn = a_tp1_lista[2]
                 a_tp1_vs = a_tp1_lista[3]
-                
+
+                """
+                SE GRABAN LAS VARIABLES PARA EL TIEMPO t
+                """
+                output = [(rad, Bw, To, Ti, v, d, RHi, a_tp1, a_tp1_aa, a_tp1_p, a_tp1_vn, a_tp1_vs, r_tp1, e_tp1, c_tp1)]
+                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
+                                
 
                 '''Se ejecutan las acciones en el paso de tiempo actual'''
                 # Aquí se está enviando información al simulador, asignando las acciones en cada uno
@@ -391,7 +391,7 @@ class environment():
 
                 if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
                     client.end_episode(config['episode'], config['last_observation'])
-                    output = [("episode_end", "episode_end", "episode_end")]
+                    output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
                     pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
                 
 
@@ -435,12 +435,12 @@ config = {'Folder_Output': '',
         'last_observation': [],
         'T_SP': 24.,
         'dT_up': 1.,
-        'dT_dn': 1.,
+        'dT_dn': 4.,
         'SP_RH': 70.,
-        'nombre_caso': "BD", # Se utiliza para identificar la carpeta donde se guardan los datos
-        'rho': 0.25, # Temperatura: default: 0.25
-        'beta': 40, # Energía: default: 20
-        'psi': 0.005, # Humedad relativa: default: 0.005
+        'nombre_caso': "DC", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'rho': 0.5, # Temperatura: default: 0.25
+        'beta': 1, # Energía: default: 20
+        'psi': 0, # Humedad relativa: default: 0.005
         'first_time_step': True,
         'directorio': '',
         'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
