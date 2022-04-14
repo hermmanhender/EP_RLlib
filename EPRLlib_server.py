@@ -76,6 +76,9 @@ def get_cli_args():
         help="Activates info-messages for different events on "
         "server/client (episode steps, postprocessing, etc..).",
     )
+
+    # Number of rollout worker actors to create for parallel sampling. Setting
+    # this to 0 will force rollouts to be done in the trainer actor.
     parser.add_argument(
         "--num-workers",
         type=int,
@@ -102,6 +105,11 @@ def get_cli_args():
         type=int,
         default=8
     )
+
+    # tf: TensorFlow (static-graph)
+    # tf2: TensorFlow 2.x (eager or traced, if eager_tracing=True)
+    # tfe: TensorFlow eager (or traced, if eager_tracing=True)
+    # torch: PyTorch
     parser.add_argument(
         "--framework",
         choices=["tf", "tf2", "tfe", "torch"],
@@ -111,19 +119,19 @@ def get_cli_args():
     parser.add_argument(
         "--stop-iters",
         type=int,
-        default=480,
+        default=4800,
         help="Number of iterations to train."
     )
     parser.add_argument(
         "--stop-timesteps",
         type=int,
-        default=5000000,
+        default=50000000,
         help="Number of timesteps to train.",
     )
     parser.add_argument(
         "--stop-reward",
         type=float,
-        default=8000.0,
+        default=10000.0,
         help="Reward at which we stop training.",
     )
     parser.add_argument(
@@ -150,6 +158,10 @@ def get_cli_args():
         help="In order to save checkpoints from which to evaluate policies",
     )
 
+    # Number of GPUs to allocate to the trainer process. Note that not all
+    # algorithms can take advantage of trainer GPUs. Support for multi-GPU
+    # is currently only available for tf-[PPO/IMPALA/DQN/PG].
+    # This can be fractional (e.g., 0.3 GPUs).
     parser.add_argument(
         "--num_gpus",
         default=0,
@@ -214,7 +226,7 @@ if __name__ == "__main__":
             {
                 "learning_starts": 100,
                 "timesteps_per_iteration": 200,
-                "n_step": 3,
+                "n_step": 4,
             }
         )
         config["model"] = {

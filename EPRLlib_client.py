@@ -391,7 +391,7 @@ class environment():
 
                 if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
                     client.end_episode(config['episode'], config['last_observation'])
-                    output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
+                    output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
                     pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
                 
 
@@ -437,8 +437,8 @@ config = {'Folder_Output': '',
         'dT_up': 1.,
         'dT_dn': 4.,
         'SP_RH': 70.,
-        'nombre_caso': "rho07", # Se utiliza para identificar la carpeta donde se guardan los datos
-        'rho': 0.7, # Temperatura: default: 0.25
+        'nombre_caso': "rho2", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'rho': 2, # Temperatura: default: 0.25
         'beta': 1, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
         'first_time_step': True,
