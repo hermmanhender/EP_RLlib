@@ -176,7 +176,12 @@ def get_cli_args():
 if __name__ == "__main__":
     # Se inicia la configuracion, la cual fue definida anteriormente
     args = get_cli_args()
+    
     # Se inicia el servidor con ray
+
+    # object_store_memory: The amount of memory (in bytes) to start the
+    # object store with. By default, this is automatically set based on
+    # available system memory.
     ray.init()
 
     # `InputReader` generator (returns None if no input reader is needed on

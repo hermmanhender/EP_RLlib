@@ -437,8 +437,8 @@ config = {'Folder_Output': '',
         'dT_up': 1.,
         'dT_dn': 4.,
         'SP_RH': 70.,
-        'nombre_caso': "rho2", # Se utiliza para identificar la carpeta donde se guardan los datos
-        'rho': 2, # Temperatura: default: 0.25
+        'nombre_caso': "rho5", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'rho': 5, # Temperatura: default: 0.25
         'beta': 1, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
         'first_time_step': True,
