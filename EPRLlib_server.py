@@ -286,4 +286,7 @@ if __name__ == "__main__":
             "episode_reward_mean": args.stop_reward,
         }
         print("Se realiza un tuneo de los parametros.")
+        
+        RAY_DISABLE_MEMORY_MONITOR = 1
+
         tune.run(args.run, config=config, stop=stop, verbose=2, restore=checkpoint_path)
