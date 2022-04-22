@@ -291,11 +291,11 @@ class environment():
                         r_hr = config['psi'] * 10 # recompensa por humedad
 
                 elif RHi > config['SP_RH']:
-                    r_temp = config['rho'] * 10 # recompensa por temperatura
+                    r_temp = config['rho'] * 100 # recompensa por temperatura
                     r_hr = - config['psi']*(RHi - config['SP_RH'])**2 # penalización por humedad
 
                 else:
-                    r_temp = config['rho'] * 10 # recompensa por temperatura
+                    r_temp = config['rho'] * 100 # recompensa por temperatura
                     r_hr = config['psi'] * 10 # recompensa por humedad
                 # Se evalúa el uso de energía
                 if e_tp1 > 0:
@@ -437,7 +437,7 @@ config = {'Folder_Output': '',
         'dT_up': 1.,
         'dT_dn': 4.,
         'SP_RH': 70.,
-        'nombre_caso': "rho10", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'nombre_caso': "rho10-100", # Se utiliza para identificar la carpeta donde se guardan los datos
         'rho': 10, # Temperatura: default: 0.25
         'beta': 1, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
