@@ -294,4 +294,11 @@ if __name__ == "__main__":
         
         RAY_DISABLE_MEMORY_MONITOR = 1
 
-        tune.run(args.run, config=config, stop=stop, verbose=2, restore=checkpoint_path)
+        tune.run(
+            args.run,
+            config=config,
+            stop=stop,
+            verbose=2,
+            restore=checkpoint_path,
+            name="experimento",
+            resume=False) #True, False or AUTO to resume the experiment or not.
