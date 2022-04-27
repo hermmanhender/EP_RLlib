@@ -36,6 +36,7 @@ In either case, the user of PolicyClient must:
 """
 
 
+from email.policy import Policy
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/EP_RLlib')
 sys.path.insert(0, 'C:/EnergyPlusV22-1-0')
@@ -457,9 +458,15 @@ if __name__ == "__main__":
     environment()
 
     n = 0
-    while n < 10000:
+    while n < 1000:
         print("\nEpisode "+ str(n+1))
         environment.run(environment)
         n += 1
-
-    
+        if n % 100 == 0:
+            print("Se obtienen los pesos de la DQN.")
+            weights = client.GET_WEIGHTS()
+            pd.DataFrame(weights).to_csv(config['directorio'] + '/Resultados/weights_prop.csv', mode="a", index=False, header=False)
+            
+    print("Se obtienen los pesos finales de la DQN.")
+    weights = client.GET_WEIGHTS()
+    pd.DataFrame(weights).to_csv(config['directorio'] + '/Resultados/weights_prop.csv', mode="a", index=False, header=False)
