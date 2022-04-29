@@ -67,23 +67,23 @@ class environment():
         """
         # Estas rutas deben coincidir con las del ordenador que se está utilizando
         if config['ruta'] == "A":
-            config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/RLforEP'
+            config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/EP_RLlib'
             self.ruta_resultados = 'C:/Users/grhen/Documents/RLforEP_Resultados'
 
         elif config['ruta'] == "B":
-            config['ruta_base'] = 'D:/GitHub/RLforEP/RLforEP_vent'
+            config['ruta_base'] = 'D:/GitHub/EP_RLlib'
             self.ruta_resultados = 'D:/Resultados_RLforEP'
         elif config['ruta'] == "C":
-            config['ruta_base'] = 'D:/GitHub/RLforEP/RLforEP'
+            config['ruta_base'] = 'D:/GitHub/EP_RLlib'
             self.ruta_resultados = 'D:/Resultados_RLforEP'
         else:
-            config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/RLforEP'
+            config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/EP_RLlib'
             self.ruta_resultados = 'C:/Users/grhen/Documents/RLforEP_Resultados'
 
         fecha = str(time.strftime('%y-%m-%d'))
         hora = str(time.strftime('%H-%M'))
         caso = config['nombre_caso']
-        config['directorio'] = self.ruta_resultados + '/' + fecha + '-'+ hora + '_caso '+ caso
+        config['directorio'] = self.ruta_resultados + '/' + fecha + '-'+ hora + '_'+ caso
         try:
             os.mkdir(config['directorio'])
             os.mkdir(config['directorio']+'/Resultados')
@@ -97,24 +97,25 @@ class environment():
         else:
             print("Se ha creado el directorio: %s " % config['directorio'])
 
-        shutil.copy(config['ruta_base'] + '/experimento_parametros.json', config['directorio'] + '/Resultados/experimento_parametros.json')
+        #shutil.copy(config['ruta_base'] + '/experimento_parametros.json', config['directorio'] + '/Resultados/experimento_parametros.json')
         
         # Para versión 950
         #shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_vent_mV950_model2.epJSON', config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
         # Para versión 960
         #shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_vent_m.epJSON', config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
         # Para versión 2210
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_vent_m_V2210.epJSON', config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_V2210.epJSON', config['directorio'] + '/Resultados/modelo_simple.epJSON')
         shutil.copy(config['ruta_base'] + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', config['directorio'] + '/Resultados/Observatorio-hour_2.epw')
 
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/RL_Aviability_Sch_0.csv')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_C_0.csv', config['directorio'] + '/Resultados/RL_Aviability_Sch_C_0.csv')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_R_0.csv', config['directorio'] + '/Resultados/RL_Aviability_Sch_R_0.csv')
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
         #output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]
-        output = [('rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_aa', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
+        output = [('rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
         #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
         #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_comp.csv', mode="w", index=False, header=False)
         pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
@@ -182,12 +183,13 @@ class environment():
         if final_day == 0:
             final_day = init_day
         
-        epJSON_file_old = MainFunctions.MainFunctions.read_epjson(config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
+        epJSON_file_old = MainFunctions.MainFunctions.read_epjson(config['directorio'] + '/Resultados/modelo_simple.epJSON')
         LocationClimate.RunPeriod.begin_day_of_month(epJSON_file_old, "DDMM", init_day)
         LocationClimate.RunPeriod.begin_month(epJSON_file_old, "DDMM", init_month)
         LocationClimate.RunPeriod.end_day_of_month(epJSON_file_old, "DDMM", final_day)
         LocationClimate.RunPeriod.end_month(epJSON_file_old, "DDMM", final_month)
-        Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control", config['directorio'] + '/Resultados/RL_Aviability_Sch_0.csv')
+        Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_R", config['directorio'] + '/Resultados/RL_Aviability_Sch_R_0.csv')
+        Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_C", config['directorio'] + '/Resultados/RL_Aviability_Sch_C_0.csv')
         Schedules.Schedule_File.file_name(epJSON_file_old, "Shadow_Control", config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
         Schedules.Schedule_File.file_name(epJSON_file_old, "VentN_Control", config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
         Schedules.Schedule_File.file_name(epJSON_file_old, "VentS_Control", config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
@@ -266,12 +268,21 @@ class environment():
                 CÁLCULO DE ENERGÍA, CONFORT Y RECOMPENSA
                 """
                 # handle for the energy consumption for cooling
-                q_supp_handle = api.exchange.get_meter_handle(state, 'Cooling:DistrictCooling')
-                q_supp = api.exchange.get_meter_value(state, q_supp_handle)
+                q_R_handle = api.exchange.get_meter_handle(state, 'Cooling:DistrictCooling')
+                q_R = api.exchange.get_meter_value(state, q_R_handle)
+
+                q_C_handle = api.exchange.get_meter_handle(state, 'Heating:DistrictHeating')
+                q_C = api.exchange.get_meter_value(state, q_C_handle)
 
                 # The energy consumption e is equal to the q_supp value but in kWh not in J
-                e_tp1 = q_supp/(3.6*1000000)
+                e_tp1 = (q_R + q_C)/(3.6*1000000)
 
+                # Handle for comfort
+                comf_handle = api.exchange.get_variable_handle(state, "Facility Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", "Thermal Zone: Modelo_Simple")
+                # Hours comfort calculation
+                c_tp1 = api.exchange.get_variable_value(state, comf_handle)
+                
+                """
                 # Minutes comfort calculation
                 if Ti > (config["T_SP"] + config['dT_up']) or Ti < (config["T_SP"] - config['dT_dn']): # or RHi > config['SP_RH']:
                     c_tp1 = 0
@@ -280,8 +291,12 @@ class environment():
                 else:
                     print("Comfort not founded.")
                     c_tp1 = -1
-                
+                """
+
                 # La recompensa es calculada a partir de la energía y los minutos de confort
+                r_tp1 = - e_tp1 + config['rho']*c_tp1
+
+                """
                 # Se evalúa el confort higro-térmico
                 if Ti > config['T_SP'] + config['dT_up'] or Ti < config['T_SP'] - config['dT_dn']:
                     if RHi > config['SP_RH']:
@@ -305,6 +320,7 @@ class environment():
                     r_energia = config['beta'] # recompensa por energía
                 
                 r_tp1 = r_energia + r_temp + r_hr
+                """
 
                 if config['first_time_step'] == False:
                     client.log_returns(config['episode'], r_tp1, {})
@@ -322,8 +338,10 @@ class environment():
                 '''Se solicitan los handles de cada una de las variables que se quiere controlar'''
                 # handle para el control de la persiana
                 ShadingControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Shadow_Control')
-                # handle para el control del aire acondicionado
-                HVACControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Aviability_Control')
+                # handle para el control del refrigerador
+                R_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Aviability_Control_R')
+                # handle para el control del calefactor
+                C_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Aviability_Control_C')
                 # handle para el control de abertura de la ventana orientada al norte
                 VentN_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'VentN_Control')
                 # handle para el control de abertura de la ventana orientada al sur
@@ -342,7 +360,7 @@ class environment():
                 Esta función transforma una acción del espacio de acciones (entero) a una lista de longitud 
                 asignada que contiene el valor binario del entero. 
                 '''
-                len = 4
+                len = 5
                 binario = []
                 # se comprueba que el entero se pueda representar como un binario de la longitud asignada
                 if a_tp1 >= 2**len:
@@ -369,15 +387,16 @@ class environment():
 
                 a_tp1_lista = binario
 
-                a_tp1_aa = a_tp1_lista[0]
-                a_tp1_p = a_tp1_lista[1]
-                a_tp1_vn = a_tp1_lista[2]
-                a_tp1_vs = a_tp1_lista[3]
+                a_tp1_R = a_tp1_lista[0]
+                a_tp1_C = a_tp1_lista[1]
+                a_tp1_p = a_tp1_lista[2]
+                a_tp1_vn = a_tp1_lista[3]
+                a_tp1_vs = a_tp1_lista[4]
 
                 """
                 SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                 """
-                output = [(rad, Bw, To, Ti, v, d, RHi, a_tp1, a_tp1_aa, a_tp1_p, a_tp1_vn, a_tp1_vs, r_tp1, e_tp1, c_tp1)]
+                output = [(rad, Bw, To, Ti, v, d, RHi, a_tp1, a_tp1_R, a_tp1_C, a_tp1_p, a_tp1_vn, a_tp1_vs, r_tp1, e_tp1, c_tp1)]
                 pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
                                 
 
@@ -385,14 +404,15 @@ class environment():
                 # Aquí se está enviando información al simulador, asignando las acciones en cada uno
                 # de los elementos accionables (en este caso se realiza a través de un calendario de
                 # disponibilidad)
-                api.exchange.set_actuator_value(state, HVACControlHandle, a_tp1_aa)
+                api.exchange.set_actuator_value(state, R_ControlHandle, a_tp1_R)
+                api.exchange.set_actuator_value(state, C_ControlHandle, a_tp1_C)
                 api.exchange.set_actuator_value(state, ShadingControlHandle, a_tp1_p)
                 api.exchange.set_actuator_value(state, VentN_ControlHandle, a_tp1_vn)
                 api.exchange.set_actuator_value(state, VentS_ControlHandle, a_tp1_vs)
 
                 if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
                     client.end_episode(config['episode'], config['last_observation'])
-                    output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
+                    output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
                     pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
                 
 

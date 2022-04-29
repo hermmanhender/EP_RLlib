@@ -1,0 +1,58 @@
+Shadowing Combinations
+..Solar Distribution=FullInteriorAndExteriorWithReflectionsFromExteriorSurfaces
+..In the following, only the first 10 reference surfaces will be shown.
+..But all surfaces are used in the calculations.
+==================================
+Surface=MURO_ESTE is used as Receiving Surface in calculations and is convex.
+Number of general casting surfaces=0
+Number of back surfaces=0
+Number of receiving sub surfaces=0
+==================================
+Surface=MURO_NORTE is used as Receiving Surface in calculations and is convex.
+Number of general casting surfaces=0
+Number of back surfaces=6
+...Surface=MURO_ESTE
+...Surface=MURO_OESTE
+...Surface=MURO_SUR
+...Surface=PISO
+...Surface=TECHO
+...Surface=ZN001:WALL002:WIN001
+Number of receiving sub surfaces=1
+....Surface=ZN001:WALL001:WIN001
+==================================
+Surface=ZN001:WALL001:WIN001 is not used as Receiving Surface in calculations.
+Number of general casting surfaces=0
+Number of back surfaces=0
+Number of receiving sub surfaces=0
+==================================
+Surface=MURO_OESTE is used as Receiving Surface in calculations and is convex.
+Number of general casting surfaces=0
+Number of back surfaces=0
+Number of receiving sub surfaces=0
+==================================
+Surface=MURO_SUR is used as Receiving Surface in calculations and is convex.
+Number of general casting surfaces=0
+Number of back surfaces=6
+...Surface=MURO_ESTE
+...Surface=MURO_NORTE
+...Surface=MURO_OESTE
+...Surface=PISO
+...Surface=TECHO
+...Surface=ZN001:WALL001:WIN001
+Number of receiving sub surfaces=1
+....Surface=ZN001:WALL002:WIN001
+==================================
+Surface=ZN001:WALL002:WIN001 is not used as Receiving Surface in calculations.
+Number of general casting surfaces=0
+Number of back surfaces=0
+Number of receiving sub surfaces=0
+==================================
+Surface=PISO is not used as Receiving Surface in calculations.
+Number of general casting surfaces=0
+Number of back surfaces=0
+Number of receiving sub surfaces=0
+==================================
+Surface=TECHO is used as Receiving Surface in calculations and is convex.
+Number of general casting surfaces=0
+Number of back surfaces=0
+Number of receiving sub surfaces=0

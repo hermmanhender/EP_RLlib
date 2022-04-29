@@ -209,7 +209,7 @@ if __name__ == "__main__":
         # TODO: (sven) make these settings unnecessary and get the information
         #  about the env spaces from the client.
         "observation_space": spaces.Box(float("-inf"), float("inf"), (7,)),
-        "action_space": spaces.Discrete(16),
+        "action_space": spaces.Discrete(32), # son 5 accionables binarios y su combinatoria es 2^5
         # Use the `PolicyServerInput` to generate experiences.
         "input": _input,
         # Use n worker processes to listen on different ports.

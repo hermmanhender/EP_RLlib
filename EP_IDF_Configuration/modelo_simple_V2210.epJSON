@@ -439,10 +439,14 @@
     },
     "Output:Meter": {
         "Output:Meter 1": {
-            "key_name": "Cooling:DistrictCooling",
+            "key_name": "Heating:DistrictHeating",
             "reporting_frequency": "Timestep"
         },
         "Output:Meter 2": {
+            "key_name": "Cooling:DistrictCooling",
+            "reporting_frequency": "Timestep"
+        },
+        "Output:Meter 3": {
             "key_name": "Cooling:EnergyTransfer",
             "reporting_frequency": "Timestep"
         }
@@ -613,8 +617,24 @@
             "column_separator": "CommaAndHTML"
         }
     },
+    "People": {
+        "People": {
+            "activity_level_schedule_name": "Activity_person",
+            "carbon_dioxide_generation_rate": 3.82e-08,
+            "clothing_insulation_calculation_method": "DynamicClothingModelASHRAE55",
+            "enable_ashrae_55_comfort_warnings": "No",
+            "fraction_radiant": 0.3,
+            "mean_radiant_temperature_calculation_type": "ZoneAveraged",
+            "number_of_people": 1,
+            "number_of_people_calculation_method": "People",
+            "number_of_people_schedule_name": "Always On",
+            "sensible_heat_fraction": "Autocalculate",
+            "thermal_comfort_model_1_type": "AdaptiveASH55",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone: Modelo_Simple"
+        }
+    },
     "RunPeriod": {
-        "DDMM2512": {
+        "DDMM": {
             "apply_weekend_holiday_rule": "No",
             "begin_day_of_month": 25,
             "begin_month": 12,
@@ -628,6 +648,23 @@
         }
     },
     "Schedule:Compact": {
+        "Activity_person": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 100
+                }
+            ],
+            "schedule_type_limits_name": "Any Number"
+        },
         "Always On": {
             "data": [
                 {
