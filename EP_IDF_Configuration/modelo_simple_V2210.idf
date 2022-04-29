@@ -4,13 +4,59 @@
 !-NOTE: All comments with '!-' are ignored by the IDFEditor and are generated automatically.
 !-      Use '!' comments if they need to be retained when using the IDFEditor.
 
+
+ZoneHVAC:IdealLoadsAirSystem,
+    Calefaccion,             !- Name
+    Aviability_Control_C,    !- Availability Schedule Name
+    NODE 2,                  !- Zone Supply Air Node Name
+    ,                        !- Zone Exhaust Air Node Name
+    ,                        !- System Inlet Air Node Name
+    50,                      !- Maximum Heating Supply Air Temperature {C}
+    0,                       !- Minimum Cooling Supply Air Temperature {C}
+    0.0156,                  !- Maximum Heating Supply Air Humidity Ratio {kgWater/kgDryAir}
+    0.0077,                  !- Minimum Cooling Supply Air Humidity Ratio {kgWater/kgDryAir}
+    LimitCapacity,           !- Heating Limit
+    ,                        !- Maximum Heating Air Flow Rate {m3/s}
+    1000,                    !- Maximum Sensible Heating Capacity {W}
+    LimitCapacity,           !- Cooling Limit
+    ,                        !- Maximum Cooling Air Flow Rate {m3/s}
+    1000,                    !- Maximum Total Cooling Capacity {W}
+    ,                        !- Heating Availability Schedule Name
+    ,                        !- Cooling Availability Schedule Name
+    ConstantSupplyHumidityRatio,  !- Dehumidification Control Type
+    ,                        !- Cooling Sensible Heat Ratio {dimensionless}
+    ConstantSupplyHumidityRatio,  !- Humidification Control Type
+    ,                        !- Design Specification Outdoor Air Object Name
+    ,                        !- Outdoor Air Inlet Node Name
+    ,                        !- Demand Controlled Ventilation Type
+    ,                        !- Outdoor Air Economizer Type
+    ,                        !- Heat Recovery Type
+    ,                        !- Sensible Heat Recovery Effectiveness {dimensionless}
+    ;                        !- Latent Heat Recovery Effectiveness {dimensionless}
+
+Schedule:File,
+    Aviability_Control_C,    !- Name
+    AviabilityType,          !- Schedule Type Limits Name
+    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Aviability_Sch_C_0.csv,  !- File Name
+    2,                       !- Column Number
+    1,                       !- Rows to Skip at Top
+    8760,                    !- Number of Hours of Data
+    Comma,                   !- Column Separator
+    No,                      !- Interpolate to Timestep
+    3,                       !- Minutes per Item
+    Yes;                     !- Adjust Schedule for Daylight Savings
+
+Output:Variable,*,Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time,Timestep;
+Output:Variable,*,Zone Air System Sensible Cooling Energy,Timestep;
+Output:Variable,*,Zone Air System Sensible Heating Energy,Timestep;
+
 RunPeriod,
-    DDMM0112,                !- Name
+    DDMM2512,                !- Name
     12,                      !- Begin Month
-    1,                       !- Begin Day of Month
+    25,                      !- Begin Day of Month
     ,                        !- Begin Year
     12,                      !- End Month
-    1,                       !- End Day of Month
+    25,                      !- End Day of Month
     ,                        !- End Year
     Sunday,                  !- Day of Week for Start Day
     No,                      !- Use Weather File Holidays and Special Days
@@ -104,13 +150,14 @@ AirflowNetwork:MultiZone:Zone,
 Schedule:File,
     VentN_Control,           !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    C:\Users\grhen\Documents\GitHub\RLforEP\EP_IDF_Configuration\VentN_Aviability_Sch_0.csv,  !- File Name
+    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\VentN_Aviability_Sch_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
     Comma,                   !- Column Separator
     No,                      !- Interpolate to Timestep
-    3;                       !- Minutes per Item
+    3,                       !- Minutes per Item
+    Yes;                     !- Adjust Schedule for Daylight Savings
 
 FenestrationSurface:Detailed,
     Zn001:Wall002:Win001,    !- Name
@@ -147,13 +194,14 @@ AirflowNetwork:MultiZone:Surface,
 Schedule:File,
     VentS_Control,           !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    C:\Users\grhen\Documents\GitHub\RLforEP\EP_IDF_Configuration\VentS_Aviability_Sch_0.csv,  !- File Name
+    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\VentS_Aviability_Sch_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
     Comma,                   !- Column Separator
     No,                      !- Interpolate to Timestep
-    3;                       !- Minutes per Item
+    3,                       !- Minutes per Item
+    Yes;                     !- Adjust Schedule for Daylight Savings
 
 Output:JSON,
     TimeSeries,              !- Option Type
@@ -301,15 +349,16 @@ ScheduleTypeLimits,
 Output:Meter,Cooling:DistrictCooling,Timestep;
 
 Schedule:File,
-    Aviability_Control,      !- Name
+    Aviability_Control_R,    !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    C:\Users\grhen\Documents\GitHub\RLforEP\EP_IDF_Configuration\RL_Aviability_Sch_0.csv,  !- File Name
+    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Aviability_Sch_R_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
     Comma,                   !- Column Separator
     No,                      !- Interpolate to Timestep
-    3;                       !- Minutes per Item
+    3,                       !- Minutes per Item
+    Yes;                     !- Adjust Schedule for Daylight Savings
 
 Output:EnergyManagementSystem,
     Verbose,                 !- Actuator Availability Dictionary Reporting
@@ -321,23 +370,30 @@ Output:Meter,Cooling:EnergyTransfer,Timestep;
 Schedule:File,
     Shadow_Control,          !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    C:\Users\grhen\Documents\GitHub\RLforEP\EP_IDF_Configuration\RL_Control_Sch_0.csv,  !- File Name
+    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Control_Sch_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
     Comma,                   !- Column Separator
     No,                      !- Interpolate to Timestep
-    3;                       !- Minutes per Item
+    3,                       !- Minutes per Item
+    Yes;                     !- Adjust Schedule for Daylight Savings
 
 ZoneHVAC:EquipmentList,
     Equipos,                 !- Name
     SequentialLoad,          !- Load Distribution Scheme
     ZoneHVAC:IdealLoadsAirSystem,  !- Zone Equipment 1 Object Type
-    EquipoClimatizacion,     !- Zone Equipment 1 Name
+    Refrigeracion,           !- Zone Equipment 1 Name
     1,                       !- Zone Equipment 1 Cooling Sequence
     1,                       !- Zone Equipment 1 Heating or No-Load Sequence
-    ,                        !- Zone Equipment 1 Sequential Cooling Fraction Schedule Name
-    ;                        !- Zone Equipment 1 Sequential Heating Fraction Schedule Name
+    COOLING SETPOINTS,       !- Zone Equipment 1 Sequential Cooling Fraction Schedule Name
+    ,                        !- Zone Equipment 1 Sequential Heating Fraction Schedule Name
+    ZoneHVAC:IdealLoadsAirSystem,  !- Zone Equipment 2 Object Type
+    Calefaccion,             !- Zone Equipment 2 Name
+    2,                       !- Zone Equipment 2 Cooling Sequence
+    2,                       !- Zone Equipment 2 Heating or No-Load Sequence
+    ,                        !- Zone Equipment 2 Sequential Cooling Fraction Schedule Name
+    HEATING SETPOINTS;       !- Zone Equipment 2 Sequential Heating Fraction Schedule Name
 
 ZoneHVAC:EquipmentConnections,
     Thermal Zone: Modelo_Simple,  !- Zone Name
@@ -349,7 +405,8 @@ ZoneHVAC:EquipmentConnections,
 
 NodeList,
     ZoneInlets,              !- Name
-    NODE 1;                  !- Node 1 Name
+    NODE 1,                  !- Node 1 Name
+    NODE 2;                  !- Node 2 Name
 
 Output:Variable,*,Zone Mean Air Temperature,Timestep;
 Output:Variable,*,Surface Outside Face Incident Solar Radiation Rate per Area,Timestep;
@@ -375,8 +432,8 @@ Output:Variable,*,Surface Window Heat Loss Energy,Timestep;
 Output:Variable,*,Site Outdoor Air Drybulb Temperature,Timestep;
 
 ZoneHVAC:IdealLoadsAirSystem,
-    EquipoClimatizacion,     !- Name
-    Aviability_Control,      !- Availability Schedule Name
+    Refrigeracion,           !- Name
+    Aviability_Control_R,    !- Availability Schedule Name
     NODE 1,                  !- Zone Supply Air Node Name
     ,                        !- Zone Exhaust Air Node Name
     ,                        !- System Inlet Air Node Name
@@ -472,7 +529,7 @@ ScheduleTypeLimits,
     Discrete,                !- Numeric Type
     Dimensionless;           !- Unit Type
 
-Version,9.6;
+Version,22.1;
 Timestep,20;
 
 Building,
