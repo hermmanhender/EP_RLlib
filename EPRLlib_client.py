@@ -278,7 +278,7 @@ class environment():
                 e_tp1 = (q_R + q_C)/(3.6*1000000)
 
                 # Handle for comfort
-                comf_handle = api.exchange.get_variable_handle(state, "Facility Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", "Thermal Zone: Modelo_Simple")
+                comf_handle = api.exchange.get_variable_handle(state, "Zone Thermal Comfort Fanger Model PPD", "Thermal Zone: Modelo_Simple")
                 # Hours comfort calculation
                 c_tp1 = api.exchange.get_variable_value(state, comf_handle)
                 
