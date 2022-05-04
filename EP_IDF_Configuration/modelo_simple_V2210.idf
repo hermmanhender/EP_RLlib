@@ -4,6 +4,23 @@
 !-NOTE: All comments with '!-' are ignored by the IDFEditor and are generated automatically.
 !-      Use '!' comments if they need to be retained when using the IDFEditor.
 
+Schedule:Compact,
+    Work Efficiency,         !- Name
+    Fraction,                !- Schedule Type Limits Name
+    Through: 12/31,          !- Field 1
+    For: Alldays,            !- Field 2
+    Until: 24:00,  0;        !- Field 4
+
+Schedule:Compact,
+    Insulation_person,       !- Name
+    Any Number,              !- Schedule Type Limits Name
+    Through: 3/21,           !- Field 1
+    For: Alldays,            !- Field 2
+    Until: 7:00,  4,         !- Field 4
+    Until 21:00,             !- Field 5
+     126,                    !- Field 6
+    Until 24:00,             !- Field 7
+     72;                     !- Field 8
 
 People,
     People,                  !- Name
@@ -18,21 +35,25 @@ People,
     Activity_person,         !- Activity Level Schedule Name
     0.0000000382,            !- Carbon Dioxide Generation Rate {m3/s-W}
     No,                      !- Enable ASHRAE 55 Comfort Warnings
-    ZoneAveraged,            !- Mean Radiant Temperature Calculation Type
-    ,                        !- Surface Name/Angle Factor List Name
-    ,                        !- Work Efficiency Schedule Name
+    SurfaceWeighted,         !- Mean Radiant Temperature Calculation Type
+    MURO_NORTE,              !- Surface Name/Angle Factor List Name
+    Work Efficiency,         !- Work Efficiency Schedule Name
     DynamicClothingModelASHRAE55,  !- Clothing Insulation Calculation Method
     ,                        !- Clothing Insulation Calculation Method Schedule Name
     ,                        !- Clothing Insulation Schedule Name
     ,                        !- Air Velocity Schedule Name
-    AdaptiveASH55;           !- Thermal Comfort Model 1 Type
+    Fanger;                  !- Thermal Comfort Model 1 Type
 
 Schedule:Compact,
     Activity_person,         !- Name
     Any Number,              !- Schedule Type Limits Name
     Through: 12/31,          !- Field 1
     For: Alldays,            !- Field 2
-    Until: 24:00,  100;      !- Field 4
+    Until: 7:00,  72,        !- Field 4
+    Until 21:00,             !- Field 5
+     126,                    !- Field 6
+    Until 24:00,             !- Field 7
+     72;                     !- Field 8
 
 Output:Meter,Heating:DistrictHeating,Timestep;
 
