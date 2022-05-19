@@ -1,4 +1,4 @@
-Program Version:,EnergyPlus, Version 22.1.0-ed759b17ee, YMD=2022.04.29 12:51
+Program Version:,EnergyPlus, Version 22.1.0-ed759b17ee, YMD=2022.05.19 10:18
 Tabular Output Report in Format: ,Comma
 
 Building:,Building 1
@@ -194,7 +194,7 @@ FOR:,Entire Facility
 General
 
 ,,Value
-,Program Version and Build,EnergyPlus, Version 22.1.0-ed759b17ee, YMD=2022.04.29 12:51
+,Program Version and Build,EnergyPlus, Version 22.1.0-ed759b17ee, YMD=2022.05.19 10:18
 ,RunPeriod,DDMM
 ,Weather File,Observatorio - - MN7 WMO#=999
 ,Latitude [deg],-32.9
@@ -409,7 +409,6 @@ FOR:,Entire Facility
 Time Not Meeting the Adaptive Comfort Models during Occupied Hours
 
 ,,ASHRAE55 90% Acceptability Limits [Hours],ASHRAE55 80% Acceptability Limits  [Hours],CEN15251 Category I Acceptability Limits [Hours],CEN15251 Category II Acceptability Limits [Hours],CEN15251 Category III Acceptability Limits [Hours]
-,PEOPLE,24.00,24.00,,,
 
 
 ----------------------------------------------------------------------------------------------------
@@ -634,8 +633,8 @@ Zone Internal Gains Nominal
 
 People Internal Gains Nominal
 
-,,Name,Schedule Name,Zone Name,Zone Floor Area {m2},# Zone Occupants,Number of People {},People/Floor Area {person/m2},Floor Area per person {m2/person},Fraction Radiant,Fraction Convected,Sensible Fraction Calculation,Activity level,ASHRAE 55 Warnings,Carbon Dioxide Generation Rate,Nominal Minimum Number of People,Nominal Maximum Number of People
-,1,PEOPLE,ALWAYS ON,THERMAL ZONE: MODELO_SIMPLE,25.00,1.0,1.0,4.000E-002,25.000,0.300,0.700,AutoCalculate,ACTIVITY_PERSON,No,3.8200E-008,1,1
+,,Name,Schedule Name,Zone Name,Zone Floor Area {m2},# Zone Occupants,Number of People {},People/Floor Area {person/m2},Floor Area per person {m2/person},Fraction Radiant,Fraction Convected,Sensible Fraction Calculation,Activity level,ASHRAE 55 Warnings,Carbon Dioxide Generation Rate,Nominal Minimum Number of People,Nominal Maximum Number of People,MRT Calculation Type,Work Efficiency,Clothing Insulation Calculation Method,Clothing Insulation Calculation Method Schedule,Clothing,Air Velocity,Fanger Calculation,Pierce Calculation,KSU Calculation,Cooling Effect Calculation,Ankle Draft Calculation
+,1,PEOPLE,ALWAYS ON,THERMAL ZONE: MODELO_SIMPLE,25.00,1.0,1.0,4.000E-002,25.000,0.300,0.700,AutoCalculate,ACTIVITY_PERSON,No,3.8200E-008,1,1,Surface Weighted,WORK EFFICIENCY,Dynamic Clothing Model ASHRAE55,N/A,Constant-1.0,AIR_VELOCITY,Yes,No,No,No,No
 
 
 Shadowing/Sun Position Calculations Annual Simulations
@@ -708,7 +707,7 @@ Environment:WarmupDays
 Warmup Convergence Information
 
 ,,Zone Name,Environment Type/Name,Average Warmup Temperature Difference {deltaC},Std Dev Warmup Temperature Difference {deltaC},Max Temperature Pass/Fail Convergence,Min Temperature Pass/Fail Convergence,Average Warmup Load Difference {W},Std Dev Warmup Load Difference {W},Heating Load Pass/Fail Convergence,Cooling Load Pass/Fail Convergence
-,1,THERMAL ZONE: MODELO_SIMPLE,RunPeriod: DDMM,1.6938540723E-002,7.2074388597E-003,Pass,Pass,0.0000000000,0.0000000000,Pass,Pass
+,1,THERMAL ZONE: MODELO_SIMPLE,RunPeriod: DDMM,1.7337416577E-002,7.1113594627E-003,Pass,Pass,0.0000000000,0.0000000000,Pass,Pass
 
 
 ----------------------------------------------------------------------------------------------------
@@ -980,7 +979,7 @@ FOR:,Entire Facility
 Average Outdoor Air During Occupied Hours
 
 ,,Average Number of Occupants,Nominal Number of Occupants,Zone Volume [m3],Mechanical Ventilation [ach],Infiltration [ach],AFN Infiltration [ach],Simple Ventilation [ach]
-,THERMAL ZONE: MODELO_SIMPLE,1.00,1.00,62.50,0.000,2.010,0.000,0.000
+,THERMAL ZONE: MODELO_SIMPLE,1.00,1.00,62.50,0.000,2.011,0.000,0.000
 Values shown for a single zone without multipliers
 
 
@@ -1074,7 +1073,7 @@ HVAC
 Input Fields
 
 ,,Count
-,IDF Objects,105
+,IDF Objects,107
 ,Defaulted Fields,63
 ,Fields with Defaults,317
 ,Autosized Fields,0
@@ -1290,7 +1289,7 @@ EAp2-18. End Use Percentage
 Schedules-Equivalent Full Load Hours (Schedule Type=Fraction)
 
 ,,Equivalent Full Load Hours of Operation Per Year [hr],Hours > 1% [hr]
-,None,,
+,WORK EFFICIENCY,0.,0.
 
 
 Schedules-SetPoints (Schedule Type=Temperature)

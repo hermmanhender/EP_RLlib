@@ -6,6 +6,8 @@ EnergyManagementSystem:Actuator Available,Environment,Weather Data,Diffuse Solar
 EnergyManagementSystem:Actuator Available,Environment,Weather Data,Direct Solar,[W/m2]
 EnergyManagementSystem:Actuator Available,Environment,Weather Data,Wind Speed,[m/s]
 EnergyManagementSystem:Actuator Available,Environment,Weather Data,Wind Direction,[deg]
+EnergyManagementSystem:Actuator Available,WORK EFFICIENCY,Schedule:Compact,Schedule Value,[ ]
+EnergyManagementSystem:Actuator Available,AIR_VELOCITY,Schedule:Compact,Schedule Value,[ ]
 EnergyManagementSystem:Actuator Available,ACTIVITY_PERSON,Schedule:Compact,Schedule Value,[ ]
 EnergyManagementSystem:Actuator Available,ALWAYS ON,Schedule:Compact,Schedule Value,[ ]
 EnergyManagementSystem:Actuator Available,HEATING SETPOINTS,Schedule:Compact,Schedule Value,[ ]

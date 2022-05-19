@@ -277,10 +277,26 @@ class environment():
                 # The energy consumption e is equal to the q_supp value but in kWh not in J
                 e_tp1 = (q_R + q_C)/(3.6*1000000)
 
-                # Handle for comfort
-                comf_handle = api.exchange.get_variable_handle(state, "Zone Thermal Comfort Fanger Model PPD", "Thermal Zone: Modelo_Simple")
-                # Hours comfort calculation
-                c_tp1 = api.exchange.get_variable_value(state, comf_handle)
+                # Handle for Fanger PPD
+                # This field is the “predicted percentage of dissatisfied” (PPD) calculated using the Fanger thermal
+                # comfort model. Details on the equations used to calculate the Fanger PPD are shown in the EnergyPlus
+                # Engineering Reference. If the zone in question is currently being controlled using a thermostat object,
+                # then the value of the PPD is determined by using the air temperature and humidity that is calculated
+                # at the system time step; otherwise, if the zone is uncontrolled, the PPD is determined using the zone air
+                # temperature and humidity that is averaged over the zone time step.
+                PPD_handle = api.exchange.get_variable_handle(state, "Zone Thermal Comfort Fanger Model PPD", "Thermal Zone: Modelo_Simple")
+                
+                # Handle for Fanger PMV
+                # This field is the “predicted mean vote” (PMV) calculated using the Fanger thermal comfort model.
+                # Details on the equations used to calculate the Fanger PMV are shown in the EnergyPlus Engineering
+                # Reference. If the zone in question is currently being controlled using a thermostat object, then the value
+                # of the PMV is determined by using the air temperature and humidity that is calculated at the system time
+                # step; otherwise, if the zone is uncontrolled, the PMV is determined using the zone air temperature and
+                # humidity that is averaged over the zone time step.
+                PMV_handle = api.exchange.get_variable_handle(state, "Zone Thermal Comfort Fanger Model PMV", "Thermal Zone: Modelo_Simple")
+
+                # PPD
+                c_tp1 = api.exchange.get_variable_value(state, PMV_handle)
                 
                 """
                 # Minutes comfort calculation
@@ -294,7 +310,7 @@ class environment():
                 """
 
                 # La recompensa es calculada a partir de la energía y los minutos de confort
-                r_tp1 = - e_tp1 + config['rho']*c_tp1
+                r_tp1 = - e_tp1 - config['rho']*(c_tp1**2)
 
                 """
                 # Se evalúa el confort higro-térmico

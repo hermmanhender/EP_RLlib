@@ -4,23 +4,26 @@
 !-NOTE: All comments with '!-' are ignored by the IDFEditor and are generated automatically.
 !-      Use '!' comments if they need to be retained when using the IDFEditor.
 
+
 Schedule:Compact,
     Work Efficiency,         !- Name
     Fraction,                !- Schedule Type Limits Name
     Through: 12/31,          !- Field 1
     For: Alldays,            !- Field 2
-    Until: 24:00,  0;        !- Field 4
+    Until: 24:00, 0;         !- Field 4
 
 Schedule:Compact,
-    Insulation_person,       !- Name
+    Air_velocity,            !- Name
     Any Number,              !- Schedule Type Limits Name
-    Through: 3/21,           !- Field 1
+    Through: 12/31,          !- Field 1
     For: Alldays,            !- Field 2
-    Until: 7:00,  4,         !- Field 4
-    Until 21:00,             !- Field 5
-     126,                    !- Field 6
-    Until 24:00,             !- Field 7
-     72;                     !- Field 8
+    Until: 7:00,  .7,        !- Field 4
+    Until 15:00,             !- Field 5
+     0,                      !- Field 6
+    Until 19:00,             !- Field 7
+     .5,                     !- Field 8
+    Until 24:00,             !- Field 9
+     .7;                     !- Field 10
 
 People,
     People,                  !- Name
@@ -41,7 +44,7 @@ People,
     DynamicClothingModelASHRAE55,  !- Clothing Insulation Calculation Method
     ,                        !- Clothing Insulation Calculation Method Schedule Name
     ,                        !- Clothing Insulation Schedule Name
-    ,                        !- Air Velocity Schedule Name
+    Air_velocity,            !- Air Velocity Schedule Name
     Fanger;                  !- Thermal Comfort Model 1 Type
 
 Schedule:Compact,
@@ -49,11 +52,11 @@ Schedule:Compact,
     Any Number,              !- Schedule Type Limits Name
     Through: 12/31,          !- Field 1
     For: Alldays,            !- Field 2
-    Until: 7:00,  72,        !- Field 4
+    Until: 7:00, 72,         !- Field 4
     Until 21:00,             !- Field 5
-     126,                    !- Field 6
+    126,                     !- Field 6
     Until 24:00,             !- Field 7
-     72;                     !- Field 8
+    72;                      !- Field 8
 
 Output:Meter,Heating:DistrictHeating,Timestep;
 
@@ -89,7 +92,7 @@ ZoneHVAC:IdealLoadsAirSystem,
 Schedule:File,
     Aviability_Control_C,    !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Aviability_Sch_C_0.csv,  !- File Name
+    D:\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Aviability_Sch_C_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
@@ -202,7 +205,7 @@ AirflowNetwork:MultiZone:Zone,
 Schedule:File,
     VentN_Control,           !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\VentN_Aviability_Sch_0.csv,  !- File Name
+    D:\GitHub\EP_RLlib\EP_IDF_Configuration\VentN_Aviability_Sch_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
@@ -246,7 +249,7 @@ AirflowNetwork:MultiZone:Surface,
 Schedule:File,
     VentS_Control,           !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\VentS_Aviability_Sch_0.csv,  !- File Name
+    D:\GitHub\EP_RLlib\EP_IDF_Configuration\VentS_Aviability_Sch_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
@@ -403,7 +406,7 @@ Output:Meter,Cooling:DistrictCooling,Timestep;
 Schedule:File,
     Aviability_Control_R,    !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Aviability_Sch_R_0.csv,  !- File Name
+    D:\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Aviability_Sch_R_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
@@ -422,7 +425,7 @@ Output:Meter,Cooling:EnergyTransfer,Timestep;
 Schedule:File,
     Shadow_Control,          !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Control_Sch_0.csv,  !- File Name
+    D:\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Control_Sch_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
