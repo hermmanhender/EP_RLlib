@@ -277,7 +277,7 @@ class environment():
                 # The energy consumption e is equal to the q_supp value but in kWh not in J
                 e_tp1 = (q_R + q_C)/(3.6*1000000)
 
-                # Handle for Fanger PPD
+                # Handle for Fanger PPD (range 0 - 100)
                 # This field is the “predicted percentage of dissatisfied” (PPD) calculated using the Fanger thermal
                 # comfort model. Details on the equations used to calculate the Fanger PPD are shown in the EnergyPlus
                 # Engineering Reference. If the zone in question is currently being controlled using a thermostat object,
@@ -286,7 +286,7 @@ class environment():
                 # temperature and humidity that is averaged over the zone time step.
                 PPD_handle = api.exchange.get_variable_handle(state, "Zone Thermal Comfort Fanger Model PPD", "Thermal Zone: Modelo_Simple")
                 
-                # Handle for Fanger PMV
+                # Handle for Fanger PMV (range (-4) - 4)
                 # This field is the “predicted mean vote” (PMV) calculated using the Fanger thermal comfort model.
                 # Details on the equations used to calculate the Fanger PMV are shown in the EnergyPlus Engineering
                 # Reference. If the zone in question is currently being controlled using a thermostat object, then the value
