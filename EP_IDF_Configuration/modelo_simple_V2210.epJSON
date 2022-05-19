@@ -620,16 +620,19 @@
     "People": {
         "People": {
             "activity_level_schedule_name": "Activity_person",
+            "air_velocity_schedule_name": "Air_velocity",
             "carbon_dioxide_generation_rate": 3.82e-08,
             "clothing_insulation_calculation_method": "DynamicClothingModelASHRAE55",
             "enable_ashrae_55_comfort_warnings": "No",
             "fraction_radiant": 0.3,
-            "mean_radiant_temperature_calculation_type": "ZoneAveraged",
+            "mean_radiant_temperature_calculation_type": "SurfaceWeighted",
             "number_of_people": 1,
             "number_of_people_calculation_method": "People",
             "number_of_people_schedule_name": "Always On",
             "sensible_heat_fraction": "Autocalculate",
-            "thermal_comfort_model_1_type": "AdaptiveASH55",
+            "surface_name_angle_factor_list_name": "MURO_NORTE",
+            "thermal_comfort_model_1_type": "Fanger",
+            "work_efficiency_schedule_name": "Work Efficiency",
             "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone: Modelo_Simple"
         }
     },
@@ -657,10 +660,57 @@
                     "field": "For: Alldays"
                 },
                 {
-                    "field": "Until: 24:00"
+                    "field": "Until: 7:00"
                 },
                 {
-                    "field": 100
+                    "field": 72
+                },
+                {
+                    "field": "Until 21:00"
+                },
+                {
+                    "field": 126
+                },
+                {
+                    "field": "Until 24:00"
+                },
+                {
+                    "field": 72
+                }
+            ],
+            "schedule_type_limits_name": "Any Number"
+        },
+        "Air_velocity": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 7:00"
+                },
+                {
+                    "field": 0.7
+                },
+                {
+                    "field": "Until 15:00"
+                },
+                {
+                    "field": 0
+                },
+                {
+                    "field": "Until 19:00"
+                },
+                {
+                    "field": 0.5
+                },
+                {
+                    "field": "Until 24:00"
+                },
+                {
+                    "field": 0.7
                 }
             ],
             "schedule_type_limits_name": "Any Number"
@@ -740,6 +790,23 @@
             ],
             "schedule_type_limits_name": "Temperature"
         },
+        "Work Efficiency": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 0
+                }
+            ],
+            "schedule_type_limits_name": "Fraction"
+        },
         "ZONE CONTROL TYPE SCHED": {
             "data": [
                 {
@@ -787,7 +854,7 @@
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 2,
             "column_separator": "Comma",
-            "file_name": "C:\\Users\\grhen\\Documents\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\RL_Aviability_Sch_C_0.csv",
+            "file_name": "D:\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\RL_Aviability_Sch_C_0.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 3,
             "number_of_hours_of_data": 8760,
@@ -798,7 +865,7 @@
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 2,
             "column_separator": "Comma",
-            "file_name": "C:\\Users\\grhen\\Documents\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\RL_Aviability_Sch_R_0.csv",
+            "file_name": "D:\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\RL_Aviability_Sch_R_0.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 3,
             "number_of_hours_of_data": 8760,
@@ -809,7 +876,7 @@
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 2,
             "column_separator": "Comma",
-            "file_name": "C:\\Users\\grhen\\Documents\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\RL_Control_Sch_0.csv",
+            "file_name": "D:\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\RL_Control_Sch_0.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 3,
             "number_of_hours_of_data": 8760,
@@ -820,7 +887,7 @@
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 2,
             "column_separator": "Comma",
-            "file_name": "C:\\Users\\grhen\\Documents\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\VentN_Aviability_Sch_0.csv",
+            "file_name": "D:\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\VentN_Aviability_Sch_0.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 3,
             "number_of_hours_of_data": 8760,
@@ -831,7 +898,7 @@
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 2,
             "column_separator": "Comma",
-            "file_name": "C:\\Users\\grhen\\Documents\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\VentS_Aviability_Sch_0.csv",
+            "file_name": "D:\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\VentS_Aviability_Sch_0.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 3,
             "number_of_hours_of_data": 8760,
