@@ -293,7 +293,7 @@ if __name__ == "__main__":
         print("Se realiza un tuneo de los parametros.")
 
         # configure how checkpoints are sync'd to the scheduler/sampler
-        sync_config = tune.syncConfig()  # the default mode is to use use rsync
+        sync_config = tune.SyncConfig()  # the default mode is to use use rsync
 
         tune.run(
             args.run,
