@@ -504,11 +504,3 @@ if __name__ == "__main__":
         print("\nEpisode "+ str(n+1))
         environment.run(environment)
         n += 1
-        if n % 100 == 0:
-            print("Se obtienen los pesos de la DQN.")
-            weights = client.GET_WEIGHTS()
-            pd.DataFrame(weights).to_csv(config['directorio'] + '/Resultados/weights_prop.csv', mode="a", index=False, header=False)
-            
-    print("Se obtienen los pesos finales de la DQN.")
-    weights = client.GET_WEIGHTS()
-    pd.DataFrame(weights).to_csv(config['directorio'] + '/Resultados/weights_prop.csv', mode="a", index=False, header=False)
