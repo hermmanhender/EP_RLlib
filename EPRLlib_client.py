@@ -298,11 +298,11 @@ class environment():
 
                 # PMV value
                 c_tp1 = api.exchange.get_variable_value(state, PMV_handle)
-                print("PMV: " + str(c_tp1))
+                #print("PMV: " + str(c_tp1))
 
                 # PPD value
                 PPD_v = api.exchange.get_variable_value(state, PPD_handle)
-                print("PPD: " + str(PPD_v))
+                #print("PPD: " + str(PPD_v))
                 
                 """
                 # Minutes comfort calculation
@@ -494,7 +494,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     client = PolicyClient(
-        f"http://localhost:{args.port}", inference_mode=args.inference_mode
+        "http://localhost:{args.port}",
+        inference_mode=args.inference_mode
         )
     
     environment()
