@@ -231,7 +231,7 @@ if __name__ == "__main__":
             {
                 "learning_starts": 100,
                 "timesteps_per_iteration": 200,
-                "n_step": 4,
+                "n_step": 10, # Tamaño del bache de datos
             }
         )
         config["model"] = {
@@ -291,8 +291,6 @@ if __name__ == "__main__":
             "episode_reward_mean": args.stop_reward,
         }
         print("Se realiza un tuneo de los parametros.")
-        
-        RAY_DISABLE_MEMORY_MONITOR = 1
 
         tune.run(
             args.run,

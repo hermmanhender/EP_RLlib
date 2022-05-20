@@ -464,144 +464,154 @@
         "Output:Variable 1": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time"
+            "variable_name": "Zone Thermal Comfort Fanger Model PMV"
         },
         "Output:Variable 2": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Zone Air System Sensible Cooling Energy"
+            "variable_name": "Zone Thermal Comfort Fanger Model PPD"
         },
         "Output:Variable 3": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Zone Air System Sensible Heating Energy"
+            "variable_name": "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time"
         },
         "Output:Variable 4": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Site Wind Speed"
+            "variable_name": "Zone Air System Sensible Cooling Energy"
         },
         "Output:Variable 5": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Site Wind Direction"
+            "variable_name": "Zone Air System Sensible Heating Energy"
         },
         "Output:Variable 6": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Site Outdoor Air Relative Humidity"
+            "variable_name": "Site Wind Speed"
         },
         "Output:Variable 7": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Zone Air Relative Humidity"
+            "variable_name": "Site Wind Direction"
         },
         "Output:Variable 8": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Zone Mean Air Temperature"
+            "variable_name": "Site Outdoor Air Relative Humidity"
         },
         "Output:Variable 9": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Outside Face Incident Solar Radiation Rate per Area"
+            "variable_name": "Zone Air Relative Humidity"
         },
         "Output:Variable 10": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Shading Device Is On Time Fraction"
+            "variable_name": "Zone Mean Air Temperature"
         },
         "Output:Variable 11": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window Blind Slat Angle"
+            "variable_name": "Surface Outside Face Incident Solar Radiation Rate per Area"
         },
         "Output:Variable 12": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window Transmitted Solar Radiation Rate"
+            "variable_name": "Surface Shading Device Is On Time Fraction"
         },
         "Output:Variable 13": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window Total Glazing Layers Absorbed Solar Radiation Rate"
+            "variable_name": "Surface Window Blind Slat Angle"
         },
         "Output:Variable 14": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window Heat Gain Rate"
+            "variable_name": "Surface Window Transmitted Solar Radiation Rate"
         },
         "Output:Variable 15": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window Heat Loss Rate"
+            "variable_name": "Surface Window Total Glazing Layers Absorbed Solar Radiation Rate"
         },
         "Output:Variable 16": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window Shading Device Absorbed Solar Radiation Rate"
+            "variable_name": "Surface Window Heat Gain Rate"
         },
         "Output:Variable 17": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window System Solar Transmittance"
+            "variable_name": "Surface Window Heat Loss Rate"
         },
         "Output:Variable 18": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window System Solar Reflectance"
+            "variable_name": "Surface Window Shading Device Absorbed Solar Radiation Rate"
         },
         "Output:Variable 19": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window System Solar Absorptance"
+            "variable_name": "Surface Window System Solar Transmittance"
         },
         "Output:Variable 20": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Zone Air System Sensible Cooling Rate"
+            "variable_name": "Surface Window System Solar Reflectance"
         },
         "Output:Variable 21": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Zone Air System Sensible Heating Rate"
+            "variable_name": "Surface Window System Solar Absorptance"
         },
         "Output:Variable 22": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Zone Air Temperature"
+            "variable_name": "Zone Air System Sensible Cooling Rate"
         },
         "Output:Variable 23": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Zone Air Humidity Ratio"
+            "variable_name": "Zone Air System Sensible Heating Rate"
         },
         "Output:Variable 24": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window Transmitted Solar Radiation Energy"
+            "variable_name": "Zone Air Temperature"
         },
         "Output:Variable 25": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window Transmitted Beam Solar Radiation Energy"
+            "variable_name": "Zone Air Humidity Ratio"
         },
         "Output:Variable 26": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window Transmitted Diffuse Solar Radiation Energy"
+            "variable_name": "Surface Window Transmitted Solar Radiation Energy"
         },
         "Output:Variable 27": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window Heat Gain Energy"
+            "variable_name": "Surface Window Transmitted Beam Solar Radiation Energy"
         },
         "Output:Variable 28": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
-            "variable_name": "Surface Window Heat Loss Energy"
+            "variable_name": "Surface Window Transmitted Diffuse Solar Radiation Energy"
         },
         "Output:Variable 29": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window Heat Gain Energy"
+        },
+        "Output:Variable 30": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Window Heat Loss Energy"
+        },
+        "Output:Variable 31": {
             "key_value": "*",
             "reporting_frequency": "Timestep",
             "variable_name": "Site Outdoor Air Drybulb Temperature"
@@ -628,7 +638,7 @@
             "mean_radiant_temperature_calculation_type": "SurfaceWeighted",
             "number_of_people": 1,
             "number_of_people_calculation_method": "People",
-            "number_of_people_schedule_name": "Always On",
+            "number_of_people_schedule_name": "number_people",
             "sensible_heat_fraction": "Autocalculate",
             "surface_name_angle_factor_list_name": "MURO_NORTE",
             "thermal_comfort_model_1_type": "Fanger",
@@ -847,6 +857,23 @@
                 }
             ],
             "schedule_type_limits_name": "Control Type"
+        },
+        "number_people": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 1
+                }
+            ],
+            "schedule_type_limits_name": "Fraction"
         }
     },
     "Schedule:File": {

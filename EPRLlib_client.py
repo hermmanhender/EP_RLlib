@@ -65,6 +65,7 @@ class environment():
         """
         Se establece la ruta base de los datos del programa
         """
+        RAY_DISABLE_MEMORY_MONITOR = 1
         # Estas rutas deben coincidir con las del ordenador que se está utilizando
         if config['ruta'] == "A":
             config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/EP_RLlib'
@@ -295,8 +296,13 @@ class environment():
                 # humidity that is averaged over the zone time step.
                 PMV_handle = api.exchange.get_variable_handle(state, "Zone Thermal Comfort Fanger Model PMV", "Thermal Zone: Modelo_Simple")
 
-                # PPD
+                # PMV value
                 c_tp1 = api.exchange.get_variable_value(state, PMV_handle)
+                print("PMV: " + str(c_tp1))
+
+                # PPD value
+                PPD_v = api.exchange.get_variable_value(state, PPD_handle)
+                print("PPD: " + str(PPD_v))
                 
                 """
                 # Minutes comfort calculation

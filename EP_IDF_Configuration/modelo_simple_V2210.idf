@@ -4,6 +4,15 @@
 !-NOTE: All comments with '!-' are ignored by the IDFEditor and are generated automatically.
 !-      Use '!' comments if they need to be retained when using the IDFEditor.
 
+Schedule:Compact,
+    number_people,           !- Name
+    Fraction,                !- Schedule Type Limits Name
+    Through: 12/31,          !- Field 1
+    For: Alldays,            !- Field 2
+    Until: 24:00,  1;        !- Field 4
+
+Output:Variable,*,Zone Thermal Comfort Fanger Model PMV,Timestep;
+Output:Variable,*,Zone Thermal Comfort Fanger Model PPD,Timestep;
 
 Schedule:Compact,
     Work Efficiency,         !- Name
@@ -17,18 +26,18 @@ Schedule:Compact,
     Any Number,              !- Schedule Type Limits Name
     Through: 12/31,          !- Field 1
     For: Alldays,            !- Field 2
-    Until: 7:00,  .7,        !- Field 4
+    Until: 7:00, .7,         !- Field 4
     Until 15:00,             !- Field 5
-     0,                      !- Field 6
+    0,                       !- Field 6
     Until 19:00,             !- Field 7
-     .5,                     !- Field 8
+    .5,                      !- Field 8
     Until 24:00,             !- Field 9
-     .7;                     !- Field 10
+    .7;                      !- Field 10
 
 People,
     People,                  !- Name
     Thermal Zone: Modelo_Simple,  !- Zone or ZoneList or Space or SpaceList Name
-    Always On,               !- Number of People Schedule Name
+    number_people,           !- Number of People Schedule Name
     People,                  !- Number of People Calculation Method
     1,                       !- Number of People
     ,                        !- People per Floor Area {person/m2}
