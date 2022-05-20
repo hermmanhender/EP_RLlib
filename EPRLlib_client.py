@@ -436,7 +436,6 @@ class environment():
                     client.end_episode(config['episode'], config['last_observation'])
                     output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
                     pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
-                
 
 
 
@@ -494,7 +493,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     client = PolicyClient(
-        "http://localhost:{args.port}",
+        f"http://localhost:{args.port}",
         inference_mode=args.inference_mode
         )
     
