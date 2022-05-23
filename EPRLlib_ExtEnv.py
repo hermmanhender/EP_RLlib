@@ -880,7 +880,7 @@ config = {'Folder_Output': '',
         'first_time_step': True,
         'directorio': '',
         'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
-        'ruta': 'A' # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
+        'ruta': 'C' # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
         }
 
 CHECKPOINT_FILE = "last_checkpoint_{}.out"
