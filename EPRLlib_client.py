@@ -345,14 +345,14 @@ class environment():
                 """
 
                 if config['first_time_step'] == False:
-                    client.log_returns(config['episode'], r_tp1, {})
+                    client.log_returns(str(config['episode']), r_tp1, {})
 
 
                 if config['first_time_step'] == True:
                     config['first_time_step'] = False
 
                 """Se obtiene la acción de RLlib"""
-                a_tp1 = client.get_action(config['episode'], s_cont_tp1)
+                a_tp1 = client.get_action(str(config['episode']), s_cont_tp1)
                 
                 """
                 SE REALIZAN LAS ACCIONES EN EL SIMULADOR

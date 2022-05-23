@@ -293,7 +293,7 @@ if __name__ == "__main__":
         print("Se realiza un tuneo de los parametros.")
 
         # configure how checkpoints are sync'd to the scheduler/sampler
-        sync_config = tune.SyncConfig()  # the default mode is to use use rsync
+        #sync_config = tune.SyncConfig()  # the default mode is to use use rsync
 
         tune.run(
             args.run,
@@ -301,18 +301,18 @@ if __name__ == "__main__":
             stop=stop,
             verbose=2,
             # restore=checkpoint_path,
-            name="experimento",
+            name="experimento_1",
             # sync our checkpoints via rsync
             # you don't have to pass an empty sync config - but we
             # do it here for clarity and comparison
-            sync_config=sync_config,
+            #sync_config=sync_config,
 
             # we'll keep the best five checkpoints at all times
             # checkpoints (by AUC score, reported by the trainable, descending)
-            checkpoint_score_attr="max-auc",
-            keep_checkpoints_num=5,
+            #checkpoint_score_attr="max-auc",
+            #keep_checkpoints_num=5,
 
             # a very useful trick! this will resume from the last run specified by
             # sync_config (if one exists), otherwise it will start a new tuning run
-            resume="AUTO", #True, False or AUTO to resume the experiment or not.
+            resume=False, #True, False or AUTO to resume the experiment or not.
             ) 
