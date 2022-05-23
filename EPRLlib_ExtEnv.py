@@ -269,7 +269,7 @@ class ExternalEnv(threading.Thread):
 
                 # Se inicia el episodio en el servidor
                 if time_step + (hour * num_time_steps_in_hour) == 1:
-                    config['episode'] = ExternalEnv.start_episode()
+                    config['episode'] = ExternalEnv.start_episode(episode_id=config['episode'])
 
                 '''Lectura de los handles'''
                 # Handles are needed before call the values that are inside them.

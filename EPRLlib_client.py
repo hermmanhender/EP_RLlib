@@ -234,7 +234,7 @@ class environment():
 
                 # Se inicia el episodio en el servidor
                 if time_step + (hour * num_time_steps_in_hour) == 1:
-                    config['episode'] = client.start_episode()
+                    client.start_episode(str(config['episode']))
 
                 '''Lectura de los handles'''
                 # Handles are needed before call the values that are inside them.
@@ -433,7 +433,8 @@ class environment():
                 api.exchange.set_actuator_value(state, VentS_ControlHandle, a_tp1_vs)
 
                 if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
-                    client.end_episode(config['episode'], config['last_observation'])
+                    client.end_episode(str(config['episode']), config['last_observation'])
+                    config['episode'] = config['episode'] + 1
                     output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
                     pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
 
@@ -473,7 +474,7 @@ parser.add_argument(
 config = {'Folder_Output': '',
         'Weather_file': '',
         'epJSON_file': '',
-        'episode': 0,
+        'episode': 1,
         'last_observation': [],
         'T_SP': 24.,
         'dT_up': 1.,
