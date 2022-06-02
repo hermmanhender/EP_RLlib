@@ -35,8 +35,6 @@ In either case, the user of PolicyClient must:
   runs an off-policy RL algorithm (such as DQN, SAC, or DDPG).
 """
 
-
-from email.policy import Policy
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/EP_RLlib')
 sys.path.insert(0, 'C:/EnergyPlusV22-1-0')
@@ -146,9 +144,9 @@ class environment():
         # Si se quiere definir un periodo determinado, utilizar la siguiente parte del codigo
         month = 1
         day = 1
-        #final_month = 3
-        #final_day = 31
-        config['epJSON_file'] = self.episode_epJSON(self, month, day) #, final_month, final_day)
+        final_month = 1
+        final_day = 7
+        config['epJSON_file'] = self.episode_epJSON(self, month, day, final_month, final_day)
         # se corre el simulador
         try:
             api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
@@ -298,7 +296,7 @@ class environment():
 
                 # PMV value
                 c_tp1 = api.exchange.get_variable_value(state, PMV_handle)
-                #print("PMV: " + str(c_tp1))
+                print("PMV: " + str(c_tp1))
 
                 # PPD value
                 PPD_v = api.exchange.get_variable_value(state, PPD_handle)
