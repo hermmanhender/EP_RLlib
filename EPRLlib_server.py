@@ -285,6 +285,27 @@ if __name__ == "__main__":
 
     # Run with Tune for auto env and trainer creation and TensorBoard.
     else:
+        """
+        # How to stop Tune runs programmatically?
+        We’ve just covered the case in which you manually interrupt a Tune run. But you can also
+        control when trials are stopped early by passing the stop argument to tune.run. This argument
+        takes, a dictionary, a function, or a Stopper class as an argument.
+
+        If a dictionary is passed in, the keys may be any field in the return result of tune.report in
+        the Function API or step() (including the results from step and auto-filled metrics).
+        
+        ## Stopping with a dictionary
+        In the example below, each trial will be stopped either when it completes 10 iterations or
+        when it reaches a mean accuracy of 0.98. These metrics are assumed to be increasing.
+        
+        # training_iteration is an auto-filled metric by Tune.
+        tune.run(
+            my_trainable,
+            stop={"training_iteration": 10, "mean_accuracy": 0.98}
+        )
+
+        More in https://docs.ray.io/en/master/tune/tutorials/tune-stopping.html
+        """
         stop = {
             "training_iteration": args.stop_iters,
             "timesteps_total": args.stop_timesteps,
@@ -295,7 +316,7 @@ if __name__ == "__main__":
         # configure how checkpoints are sync'd to the scheduler/sampler
         #sync_config = tune.SyncConfig()  # the default mode is to use use rsync
 
-        tune.run(
+        analysis = tune.run(
             args.run,
             config=config,
             stop=stop,
@@ -314,5 +335,28 @@ if __name__ == "__main__":
 
             # a very useful trick! this will resume from the last run specified by
             # sync_config (if one exists), otherwise it will start a new tuning run
-            resume=False, #True, False or AUTO to resume the experiment or not.
-            ) 
+            resume=False, #True, False, to resume the experiment or not, or AUTO, which will attempt to resume the experiment if possible, and otherwise will start a new experiment.
+            )
+        
+        """
+        # Analyses
+        tune.run returns an ExperimentAnalysis object which has methods you can use for analyzing
+        your training. The following example shows you how to access various metrics from an analysis
+        object, like the best available trial, or the best hyperparameter configuration for that trial:
+        """
+        best_trial = analysis.best_trial  # Get best trial
+        best_config = analysis.best_config  # Get best trial's hyperparameters
+        best_logdir = analysis.best_logdir  # Get best trial's logdir
+        best_checkpoint = analysis.best_checkpoint  # Get best trial's best checkpoint
+        best_result = analysis.best_result  # Get best trial's last results
+        best_result_df = analysis.best_result_df  # Get best result as pandas dataframe
+
+        """
+        This object can also retrieve all training runs as dataframes, allowing you to do ad-hoc
+        data analysis over your results.
+        """
+        # Get a dataframe with the last results for each trial
+        df_results = analysis.results_df
+
+        # Get a dataframe of results for a specific score or mode
+        df = analysis.dataframe(metric="score", mode="max")
