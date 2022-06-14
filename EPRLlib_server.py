@@ -28,6 +28,8 @@ from gym import spaces
 # La libreria os se utilizara para la creacion de directorios donde se almacenaran
 # los archivos de datos y configuracion del experimento
 import os
+
+import pandas as pd
 # Ray es la libreria principal de la cual se obtiene la preconfiguracion del 
 # servidor y los clientes.
 # Todos sus modulos luego importados son utilizados para la configuracion del servidor,
@@ -314,27 +316,36 @@ if __name__ == "__main__":
         print("Se realiza un tuneo de los parametros.")
 
         # configure how checkpoints are sync'd to the scheduler/sampler
-        #sync_config = tune.SyncConfig()  # the default mode is to use use rsync
+        sync_config = tune.SyncConfig()  # the default mode is to use use rsync
 
         analysis = tune.run(
             args.run,
             config=config,
             stop=stop,
             verbose=2,
+
             # if you would like to collect the stream outputs in files for later analysis or
             # troubleshooting, Tune offers an utility parameter, log_to_file, for this.
             log_to_file=True,
+
             # restore=checkpoint_path,
+
+            # name of your experiment
             name="fanger_comfort",
+
+            # a directory where results are stored before being
+            # sync'd to head node/cloud storage
+            local_dir="/tmp/mypath",
+
             # sync our checkpoints via rsync
             # you don't have to pass an empty sync config - but we
             # do it here for clarity and comparison
-            #sync_config=sync_config,
+            sync_config=sync_config,
 
             # we'll keep the best five checkpoints at all times
             # checkpoints (by AUC score, reported by the trainable, descending)
-            #checkpoint_score_attr="max-auc",
-            #keep_checkpoints_num=5,
+            checkpoint_score_attr="max-auc",
+            keep_checkpoints_num=5,
 
             # a very useful trick! this will resume from the last run specified by
             # sync_config (if one exists), otherwise it will start a new tuning run
@@ -353,6 +364,8 @@ if __name__ == "__main__":
         best_checkpoint = analysis.best_checkpoint  # Get best trial's best checkpoint
         best_result = analysis.best_result  # Get best trial's last results
         best_result_df = analysis.best_result_df  # Get best result as pandas dataframe
+        
+        best_result_df.to_csv()
 
         """
         This object can also retrieve all training runs as dataframes, allowing you to do ad-hoc
@@ -363,3 +376,29 @@ if __name__ == "__main__":
 
         # Get a dataframe of results for a specific score or mode
         df = analysis.dataframe(metric="score", mode="max")
+
+
+
+        if args.run == "DQN":
+            trainer = DQNTrainer(config=config)
+        else:
+            trainer = PPOTrainer(config=config)
+
+        print("Restoring from the best checkpoint path", best_checkpoint)
+        trainer.restore(best_checkpoint)
+
+        # Serving and training loop.
+        ts = 0
+        for _ in range(args.stop_iters):
+            results = trainer.train()
+            print(pretty_print(results))
+            checkpoint = trainer.save()
+            print("Last checkpoint", checkpoint)
+            with open(checkpoint_path, "w") as f:
+                f.write(checkpoint)
+            if (
+                results["episode_reward_mean"] >= args.stop_reward
+                or ts >= args.stop_timesteps
+            ):
+                break
+            ts += results["timesteps_total"]

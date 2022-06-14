@@ -232,7 +232,7 @@ class environment():
 
                 # Se inicia el episodio en el servidor
                 if time_step + (hour * num_time_steps_in_hour) == 1:
-                    print("Se inicia un nuevo episodio.")
+                    print("\n**********************************************\nSe inicia un nuevo episodio.\n**********************************************\n")
                     client.start_episode(str(config['episode']))
 
                 '''Lectura de los handles'''
@@ -301,7 +301,7 @@ class environment():
 
                 # PPD value
                 PPD_v = api.exchange.get_variable_value(state, PPD_handle)
-                #print("PPD: " + str(PPD_v))
+                print("PPD: " + str(PPD_v))
                 
                 """
                 # Minutes comfort calculation
