@@ -125,7 +125,7 @@ def get_cli_args():
     parser.add_argument(
         "--stop-timesteps",
         type=int,
-        default=50000,
+        default=5000,
         help="Number of timesteps to train.",
     )
     parser.add_argument(
@@ -321,6 +321,9 @@ if __name__ == "__main__":
             config=config,
             stop=stop,
             verbose=2,
+            # if you would like to collect the stream outputs in files for later analysis or
+            # troubleshooting, Tune offers an utility parameter, log_to_file, for this.
+            log_to_file=True,
             # restore=checkpoint_path,
             name="fanger_comfort",
             # sync our checkpoints via rsync
