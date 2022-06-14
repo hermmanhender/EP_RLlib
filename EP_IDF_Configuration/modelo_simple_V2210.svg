@@ -5,7 +5,11 @@
      xmlns:ev="http://www.w3.org/2001/xml-events">
 <g font-family="Verdana" font-size="8">
   <text x="200" y="40">Unused Non-Parent Objects:</text>
-  <text x="200" y="80">
+  <text x="220" y="60">OutdoorAir:Node</text>
+  <text x="220" y="80">THERMAL ZONE: MODELO_SIMPLE</text>
+  <text x="220" y="100">CALEFACCION</text>
+  <text x="220" y="120">REFRIGERACION</text>
+  <text x="200" y="160">
 The following are not supported: objects related to controls or ZoneHVAC:IdealLoadsAirSystem</text>
 </g>
 </svg>

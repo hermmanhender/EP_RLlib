@@ -322,7 +322,7 @@ if __name__ == "__main__":
             stop=stop,
             verbose=2,
             # restore=checkpoint_path,
-            name="experimento_2",
+            name="fanger_comfort",
             # sync our checkpoints via rsync
             # you don't have to pass an empty sync config - but we
             # do it here for clarity and comparison

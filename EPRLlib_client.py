@@ -232,6 +232,7 @@ class environment():
 
                 # Se inicia el episodio en el servidor
                 if time_step + (hour * num_time_steps_in_hour) == 1:
+                    print("Se inicia un nuevo episodio.")
                     client.start_episode(str(config['episode']))
 
                 '''Lectura de los handles'''
@@ -343,6 +344,7 @@ class environment():
                 """
 
                 if config['first_time_step'] == False:
+                    print("Se envían las recompensas para su registro en el aprendizaje.")
                     client.log_returns(str(config['episode']), r_tp1, {})
 
 
@@ -350,6 +352,7 @@ class environment():
                     config['first_time_step'] = False
 
                 """Se obtiene la acción de RLlib"""
+                print("Se obtiene una acción del agente.")
                 a_tp1 = client.get_action(str(config['episode']), s_cont_tp1)
                 
                 """
@@ -431,6 +434,7 @@ class environment():
                 api.exchange.set_actuator_value(state, VentS_ControlHandle, a_tp1_vs)
 
                 if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
+                    print("Se finaliza el episodio.")
                     client.end_episode(str(config['episode']), config['last_observation'])
                     config['episode'] = config['episode'] + 1
                     output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
@@ -478,13 +482,13 @@ config = {'Folder_Output': '',
         'dT_up': 1.,
         'dT_dn': 4.,
         'SP_RH': 70.,
-        'nombre_caso': "rho10-100", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'nombre_caso': "fanger_comfort", # Se utiliza para identificar la carpeta donde se guardan los datos
         'rho': 10, # Temperatura: default: 0.25
         'beta': 1, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
         'first_time_step': True,
         'directorio': '',
-        'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
+        'ruta_base': 'C:/Users/grhen/Documents/GitHub/EP_RLlib',
         'ruta': 'A' # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
         }
 

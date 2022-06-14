@@ -9,7 +9,7 @@ Schedule:Compact,
     Fraction,                !- Schedule Type Limits Name
     Through: 12/31,          !- Field 1
     For: Alldays,            !- Field 2
-    Until: 24:00,  1;        !- Field 4
+    Until: 24:00, 1;         !- Field 4
 
 Output:Variable,*,Zone Thermal Comfort Fanger Model PMV,Timestep;
 Output:Variable,*,Zone Thermal Comfort Fanger Model PPD,Timestep;
@@ -101,7 +101,7 @@ ZoneHVAC:IdealLoadsAirSystem,
 Schedule:File,
     Aviability_Control_C,    !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    D:\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Aviability_Sch_C_0.csv,  !- File Name
+    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Aviability_Sch_C_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
@@ -214,7 +214,7 @@ AirflowNetwork:MultiZone:Zone,
 Schedule:File,
     VentN_Control,           !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    D:\GitHub\EP_RLlib\EP_IDF_Configuration\VentN_Aviability_Sch_0.csv,  !- File Name
+    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\VentN_Aviability_Sch_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
@@ -258,7 +258,7 @@ AirflowNetwork:MultiZone:Surface,
 Schedule:File,
     VentS_Control,           !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    D:\GitHub\EP_RLlib\EP_IDF_Configuration\VentS_Aviability_Sch_0.csv,  !- File Name
+    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\VentS_Aviability_Sch_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
@@ -415,7 +415,7 @@ Output:Meter,Cooling:DistrictCooling,Timestep;
 Schedule:File,
     Aviability_Control_R,    !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    D:\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Aviability_Sch_R_0.csv,  !- File Name
+    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Aviability_Sch_R_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
@@ -434,7 +434,7 @@ Output:Meter,Cooling:EnergyTransfer,Timestep;
 Schedule:File,
     Shadow_Control,          !- Name
     AviabilityType,          !- Schedule Type Limits Name
-    D:\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Control_Sch_0.csv,  !- File Name
+    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Control_Sch_0.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
