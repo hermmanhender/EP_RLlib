@@ -234,6 +234,7 @@ class environment():
                 if time_step + (hour * num_time_steps_in_hour) == 1:
                     print("\n**********************************************\nSe inicia un nuevo episodio.\n**********************************************\n")
                     client.start_episode(str(config['episode']))
+                    print(str(config['episode']))
 
                 '''Lectura de los handles'''
                 # Handles are needed before call the values that are inside them.
