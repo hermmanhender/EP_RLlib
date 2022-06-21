@@ -8,49 +8,87 @@ from IDF_tool import Schedules, LocationClimate, MainFunctions
 import time
 import os
 import shutil
-import argparse
 import pandas as pd
 import numpy as np
 from gym import spaces
-
-from ray.rllib.agents.dqn import DQNTrainer
-from ray.rllib.agents.ppo import PPOTrainer
-from ray.rllib.examples.custom_metrics_and_callbacks import MyCallbacks
-from ray import tune
-from ray.tune.logger import pretty_print
-import threading
-
-from ray.rllib.env.policy_client import PolicyClient
-
-from ray.rllib.utils.annotations import override, PublicAPI
+from ray.rllib.utils.annotations import override
 from ray.rllib.env.external_env import ExternalEnv
 
 
+import argparse
+import ray
+from ray import tune
+from ray.rllib.agents.ppo import PPOTrainer
+from ray.rllib.utils.framework import try_import_tf, try_import_torch
+from ray.rllib.utils.test_utils import check_learning_achieved
+from ray.tune.logger import pretty_print
 
-config = {'Folder_Output': '',
+tf1, tf, tfv = try_import_tf()
+torch, nn = try_import_torch()
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--run", type=str, default="PPO", help="The RLlib-registered algorithm to use."
+)
+parser.add_argument(
+    "--framework",
+    choices=["tf", "tf2", "tfe", "torch"],
+    default="tf",
+    help="The DL framework specifier.",
+)
+parser.add_argument(
+    "--as-test",
+    action="store_true",
+    help="Whether this script should be run as a test: --stop-reward must "
+    "be achieved within --stop-timesteps AND --stop-iters.",
+)
+parser.add_argument(
+    "--stop-iters", type=int, default=50, help="Number of iterations to train."
+)
+parser.add_argument(
+    "--stop-timesteps", type=int, default=100000, help="Number of timesteps to train."
+)
+parser.add_argument(
+    "--stop-reward", type=float, default=0.1, help="Reward at which we stop training."
+)
+parser.add_argument(
+    "--no-tune",
+    action="store_true",
+    help="Run without Tune using a manual train loop instead. In this case,"
+    "use PPO without grid search and no TensorBoard.",
+)
+parser.add_argument(
+    "--local-mode",
+    action="store_true",
+    help="Init Ray in local mode for easier debugging.",
+)
+
+
+
+class EnergyPlusEnv(ExternalEnv):
+    
+    def __init__(self,
+        config = {
+            'Folder_Output': '',
             'Weather_file': '',
             'epJSON_file': '',
-            'episode': 0,
+            'episode': "",
             'last_observation': [],
             'T_SP': 24.,
             'dT_up': 1.,
             'dT_dn': 4.,
             'SP_RH': 70.,
-            'nombre_caso': "rho10-100", # Se utiliza para identificar la carpeta donde se guardan los datos
+            'nombre_caso': "fanger_comfort", # Se utiliza para identificar la carpeta donde se guardan los datos
             'rho': 10, # Temperatura: default: 0.25
             'beta': 1, # Energía: default: 20
             'psi': 0, # Humedad relativa: default: 0.005
             'first_time_step': True,
             'directorio': '',
-            'ruta_base': 'C:/Users/grhen/Documents/GitHub/RLforEP',
-            'ruta': 'C' # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
+            'ruta_base': 'C:/Users/grhen/Documents/GitHub/EP_RLlib',
+            'ruta': 'A', # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
+            'RAY_DISABLE_MEMORY_MONITOR': 1
             }
-
-
-class EnergyPlusEnv(ExternalEnv):
-    global config
-
-    def __init__(self, action_space, observation_space, max_concurrent):
+        ):
         """Initializes an ExternalEnv instance.
 
         Args:
@@ -61,10 +99,9 @@ class EnergyPlusEnv(ExternalEnv):
         """
         # Se invoca al constructor de la clase ExternalEnv
         ExternalEnv.__init__(
-            self,
-            action_space= action_space,
-            observation_space= observation_space,
-            max_concurrent = max_concurrent,
+            action_space=spaces.Discrete(32), # son 5 accionables binarios y su combinatoria es 2^5
+            observation_space=spaces.Box(float("-inf"), float("inf"), (7,)),
+            max_concurrent=100
             )
         
 
@@ -72,36 +109,36 @@ class EnergyPlusEnv(ExternalEnv):
         Se establece la ruta base de los datos del programa
         """
         # Estas rutas deben coincidir con las del ordenador que se está utilizando
-        if config['ruta'] == "A":
-            config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/EP_RLlib'
+        if self.config['ruta'] == "A":
+            self.config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/EP_RLlib'
             self.ruta_resultados = 'C:/Users/grhen/Documents/RLforEP_Resultados'
 
-        elif config['ruta'] == "B":
-            config['ruta_base'] = 'D:/GitHub/EP_RLlib'
+        elif self.config['ruta'] == "B":
+            self.config['ruta_base'] = 'D:/GitHub/EP_RLlib'
             self.ruta_resultados = 'D:/Resultados_RLforEP'
-        elif config['ruta'] == "C":
-            config['ruta_base'] = 'D:/GitHub/EP_RLlib'
+        elif self.config['ruta'] == "C":
+            self.config['ruta_base'] = 'D:/GitHub/EP_RLlib'
             self.ruta_resultados = 'D:/Resultados_RLforEP'
         else:
-            config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/EP_RLlib'
+            self.config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/EP_RLlib'
             self.ruta_resultados = 'C:/Users/grhen/Documents/RLforEP_Resultados'
 
         fecha = str(time.strftime('%y-%m-%d'))
         hora = str(time.strftime('%H-%M'))
         caso = config['nombre_caso']
-        config['directorio'] = self.ruta_resultados + '/' + fecha + '-'+ hora + '_'+ caso
+        self.config['directorio'] = self.ruta_resultados + '/' + fecha + '-'+ hora + '_'+ caso
         try:
-            os.mkdir(config['directorio'])
-            os.mkdir(config['directorio']+'/Resultados')
+            os.mkdir(self.config['directorio'])
+            os.mkdir(self.config['directorio']+'/Resultados')
         except OSError:
             time.sleep(60)
-            os.mkdir(config['directorio'])
-            os.mkdir(config['directorio']+'/Resultados')
-            print("Se ha creado el directorio: %s " % config['directorio'])
+            os.mkdir(self.config['directorio'])
+            os.mkdir(self.config['directorio']+'/Resultados')
+            print("Se ha creado el directorio: %s " % self.config['directorio'])
         except:
-            print("La creación del directorio %s falló" % config['directorio'])
+            print("La creación del directorio %s falló" % self.config['directorio'])
         else:
-            print("Se ha creado el directorio: %s " % config['directorio'])
+            print("Se ha creado el directorio: %s " % self.config['directorio'])
 
         #shutil.copy(config['ruta_base'] + '/experimento_parametros.json', config['directorio'] + '/Resultados/experimento_parametros.json')
         
@@ -110,27 +147,27 @@ class EnergyPlusEnv(ExternalEnv):
         # Para versión 960
         #shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_vent_m.epJSON', config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
         # Para versión 2210
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_V2210.epJSON', config['directorio'] + '/Resultados/modelo_simple.epJSON')
-        shutil.copy(config['ruta_base'] + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', config['directorio'] + '/Resultados/Observatorio-hour_2.epw')
+        shutil.copy(self.config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_V2210.epJSON', self.config['directorio'] + '/Resultados/modelo_simple.epJSON')
+        shutil.copy(self.config['ruta_base'] + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', self.config['directorio'] + '/Resultados/Observatorio-hour_2.epw')
 
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_C_0.csv', config['directorio'] + '/Resultados/RL_Aviability_Sch_C_0.csv')
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_R_0.csv', config['directorio'] + '/Resultados/RL_Aviability_Sch_R_0.csv')
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
+        shutil.copy(self.config['ruta_base'] + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', self.config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
+        shutil.copy(self.config['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_C_0.csv', self.config['directorio'] + '/Resultados/RL_Aviability_Sch_C_0.csv')
+        shutil.copy(self.config['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_R_0.csv', self.config['directorio'] + '/Resultados/RL_Aviability_Sch_R_0.csv')
+        shutil.copy(self.config['ruta_base'] + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', self.config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
+        shutil.copy(self.config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', self.config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
         #output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]
         output = [('rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
         #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
         #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_comp.csv', mode="w", index=False, header=False)
-        pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
+        pd.DataFrame(output).to_csv(self.config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
           
         #config['directorio'] = EPExternalEnv.directorio(EPExternalEnv)
 
-        config['Folder_Output'] = config['directorio']
-        config['Weather_file'] = config['directorio'] + '/Resultados/Observatorio-hour_2.epw'
-        config['epJSON_file'] = config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON'
+        self.config['Folder_Output'] = self.config['directorio']
+        self.config['Weather_file'] = self.config['directorio'] + '/Resultados/Observatorio-hour_2.epw'
+        self.config['epJSON_file'] = self.config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON'
 
     @override(ExternalEnv)
     def run(self):
@@ -139,7 +176,6 @@ class EnergyPlusEnv(ExternalEnv):
         forma local y asigna el momento en el que se hace el intercambio con la función de intercambio
         de información EP_exchange_function.
         """
-        global config
 
         def random_run_date(self):
             month = int(np.random.randint(1, 13, 1))
@@ -165,18 +201,18 @@ class EnergyPlusEnv(ExternalEnv):
             if final_day == 0:
                 final_day = init_day
             
-            epJSON_file_old = MainFunctions.MainFunctions.read_epjson(config['directorio'] + '/Resultados/modelo_simple.epJSON')
+            epJSON_file_old = MainFunctions.MainFunctions.read_epjson(self.config['directorio'] + '/Resultados/modelo_simple.epJSON')
             LocationClimate.RunPeriod.begin_day_of_month(epJSON_file_old, "DDMM", init_day)
             LocationClimate.RunPeriod.begin_month(epJSON_file_old, "DDMM", init_month)
             LocationClimate.RunPeriod.end_day_of_month(epJSON_file_old, "DDMM", final_day)
             LocationClimate.RunPeriod.end_month(epJSON_file_old, "DDMM", final_month)
-            Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_R", config['directorio'] + '/Resultados/RL_Aviability_Sch_R_0.csv')
-            Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_C", config['directorio'] + '/Resultados/RL_Aviability_Sch_C_0.csv')
-            Schedules.Schedule_File.file_name(epJSON_file_old, "Shadow_Control", config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
-            Schedules.Schedule_File.file_name(epJSON_file_old, "VentN_Control", config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
-            Schedules.Schedule_File.file_name(epJSON_file_old, "VentS_Control", config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
-            MainFunctions.MainFunctions.write_epjson(config['directorio'] + '/Resultados/new.epJSON', epJSON_file_old)
-            epJSON_new = config['directorio'] + '/Resultados/new.epJSON'
+            Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_R", self.config['directorio'] + '/Resultados/RL_Aviability_Sch_R_0.csv')
+            Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_C", self.config['directorio'] + '/Resultados/RL_Aviability_Sch_C_0.csv')
+            Schedules.Schedule_File.file_name(epJSON_file_old, "Shadow_Control", self.config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
+            Schedules.Schedule_File.file_name(epJSON_file_old, "VentN_Control", self.config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
+            Schedules.Schedule_File.file_name(epJSON_file_old, "VentS_Control", self.config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
+            MainFunctions.MainFunctions.write_epjson(self.config['directorio'] + '/Resultados/new.epJSON', epJSON_file_old)
+            epJSON_new = self.config['directorio'] + '/Resultados/new.epJSON'
 
             return epJSON_new
 
@@ -215,8 +251,7 @@ class EnergyPlusEnv(ExternalEnv):
 
                     # Se inicia el episodio en el servidor
                     if time_step + (hour * num_time_steps_in_hour) == 1:
-                        episode = self.start_episode()
-                        config['episode'] = episode
+                        self.config['episode'] = self.start_episode()
 
                     '''Lectura de los handles'''
                     # Handles are needed before call the values that are inside them.
@@ -245,7 +280,7 @@ class EnergyPlusEnv(ExternalEnv):
                     
                     # the values are saved in a dictionary to compose the observation (or state)
                     s_cont_tp1 = [rad, Bw, To, Ti, v, d, RHi]
-                    config['last_observation'] = s_cont_tp1
+                    self.config['last_observation'] = s_cont_tp1
 
                     """
                     CÁLCULO DE ENERGÍA, CONFORT Y RECOMPENSA
@@ -326,19 +361,19 @@ class EnergyPlusEnv(ExternalEnv):
                     r_tp1 = r_energia + r_temp + r_hr
                     """
 
-                    if config['first_time_step'] == False:
+                    if self.config['first_time_step'] == False:
                         self.log_returns(
-                            config['episode'],
+                            self.config['episode'],
                             r_tp1,
                             {}
                             )
 
 
-                    if config['first_time_step'] == True:
-                        config['first_time_step'] = False
+                    if self.config['first_time_step'] == True:
+                        self.config['first_time_step'] = False
 
                     """Se obtiene la acción de RLlib"""
-                    a_tp1 = self.get_action(config['episode'], s_cont_tp1)
+                    a_tp1 = self.get_action(self.config['episode'], s_cont_tp1)
                     
                     """
                     SE REALIZAN LAS ACCIONES EN EL SIMULADOR
@@ -405,7 +440,7 @@ class EnergyPlusEnv(ExternalEnv):
                     SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                     """
                     output = [(rad, Bw, To, Ti, v, d, RHi, a_tp1, a_tp1_R, a_tp1_C, a_tp1_p, a_tp1_vn, a_tp1_vs, r_tp1, e_tp1, c_tp1)]
-                    pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
+                    pd.DataFrame(output).to_csv(self.config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
                                     
 
                     '''Se ejecutan las acciones en el paso de tiempo actual'''
@@ -419,9 +454,9 @@ class EnergyPlusEnv(ExternalEnv):
                     api.exchange.set_actuator_value(state, VentS_ControlHandle, a_tp1_vs)
 
                     if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
-                        self.end_episode(config['episode'], config['last_observation'])
+                        self.end_episode(self.config['episode'], self.config['last_observation'])
                         output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
-                        pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
+                        pd.DataFrame(output).to_csv(self.config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
 
         # se establece un estado en el simulador (indispensable)
         state = api.state_manager.new_state()
@@ -437,47 +472,26 @@ class EnergyPlusEnv(ExternalEnv):
         day = 1
         #final_month = 3
         #final_day = 31
-        config['epJSON_file'] = episode_epJSON(self, month, day) #, final_month, final_day)
+        self.config['epJSON_file'] = episode_epJSON(self, month, day) #, final_month, final_day)
         # se corre el simulador
         try:
-            api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
+            api.runtime.run_energyplus(state, ['-d', self.config['Folder_Output'], '-w', self.config['Weather_file'], self.config['epJSON_file']])
         except:
-            api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
+            api.runtime.run_energyplus(state, ['-d', self.config['Folder_Output'], '-w', self.config['Weather_file'], self.config['epJSON_file']])
         # se elimina el estado para evitar posibles errores en la memoria (opcional)(con la versión EP 960
         # esto arroja error)
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--no-train",
-    action="store_true",
-    help="Whether to disable training."
-)
-parser.add_argument(
-    "--inference-mode",
-    type=str,
-    default="local",
-    choices=["local", "remote"]
-)
-parser.add_argument(
-    "--off-policy",
-    action="store_true",
-    help="Whether to compute random actions instead of on-policy "
-    "(Policy-computed) ones.",
-)
-parser.add_argument(
-    "--stop-reward",
-    type=float,
-    default=9999,
-    help="Stop once the specified reward is reached.",
-)
-parser.add_argument(
-    "--port",
-    type=int,
-    default=9900,
-    help="The port to use (on localhost)."
-)
 
-config = {'Folder_Output': '',
+
+if __name__ == "__main__":
+    
+    from ray.rllib.models import ModelCatalog
+    
+    args = parser.parse_args()
+    print(f"Running with following CLI options: {args}")
+
+    ray.init(local_mode=args.local_mode)
+    config = {'Folder_Output': '',
         'Weather_file': '',
         'epJSON_file': '',
         'episode': "",
@@ -497,36 +511,59 @@ config = {'Folder_Output': '',
         'RAY_DISABLE_MEMORY_MONITOR': 1
         }
 
-if __name__ == "__main__":
-    
-    from ray.tune import register_env
-    from ray.rllib.algorithms.dqn import DQN
-    
-    environment = EnergyPlusEnv(
-        action_space=spaces.Discrete(32), # son 5 accionables binarios y su combinatoria es 2^5
-        observation_space=spaces.Box(float("-inf"), float("inf"), (7,)),
-        max_concurrent=100)
+    # register_env("EPEnv", lambda config: EnergyPlusEnv(config))
 
-    register_env("my_env", # doctest: +SKIP
-        lambda config: environment(config))
-    trainer = DQN(env="my_env") # doctest: +SKIP
-    while True: # doctest: +SKIP
-        print(trainer.train()) # doctest: +SKIP
+    ModelCatalog.register_custom_model("EPEnv", EnergyPlusEnv)
 
-    """args = parser.parse_args()
 
-    client = PolicyClient(
-        f"http://localhost:{args.port}",
-        inference_mode=args.inference_mode
-        )
-    
-    environment = EnergyPlusEnv(
-        action_space=spaces.Discrete(32), # son 5 accionables binarios y su combinatoria es 2^5
-        observation_space=spaces.Box(float("-inf"), float("inf"), (7,)),
-        max_concurrent=100)
+    config = {
+        "env": "EPEnv",
+        "env_config": {
+            "corridor_length": 5,
+        },
+        # Use GPUs iff `RLLIB_NUM_GPUS` env var set to > 0.
+        "num_gpus": int(os.environ.get("RLLIB_NUM_GPUS", "0")),
+        "model": {
+            "custom_model": "my_model",
+            "vf_share_layers": True,
+        },
+        "num_workers": 1,  # parallelism
+        "framework": args.framework,
+    }
 
-    n = 0
-    while n < 1000:
-        print("\nEpisode "+ str(n+1))
-        environment.run()
-        n += 1"""
+    stop = {
+        "training_iteration": args.stop_iters,
+        "timesteps_total": args.stop_timesteps,
+        "episode_reward_mean": args.stop_reward,
+    }
+
+    if args.no_tune:
+        # manual training with train loop using PPO and fixed learning rate
+        if args.run != "PPO":
+            raise ValueError("Only support --run PPO with --no-tune.")
+        print("Running manual train loop without Ray Tune.")
+        ppo_config = ppo.DEFAULT_CONFIG.copy()
+        ppo_config.update(config)
+        # use fixed learning rate instead of grid search (needs tune)
+        ppo_config["lr"] = 1e-3
+        trainer = ppo.PPO(config=ppo_config, env=SimpleCorridor)
+        # run manual training loop and print results after each iteration
+        for _ in range(args.stop_iters):
+            result = trainer.train()
+            print(pretty_print(result))
+            # stop training of the target train steps or reward are reached
+            if (
+                result["timesteps_total"] >= args.stop_timesteps
+                or result["episode_reward_mean"] >= args.stop_reward
+            ):
+                break
+    else:
+        # automated run with Tune and grid search and TensorBoard
+        print("Training automatically with Ray Tune")
+        results = tune.run(args.run, config=config, stop=stop)
+
+        if args.as_test:
+            print("Checking if learning goals were achieved")
+            check_learning_achieved(results, args.stop_reward)
+
+    ray.shutdown()
