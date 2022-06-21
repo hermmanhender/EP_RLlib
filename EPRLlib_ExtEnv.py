@@ -491,6 +491,7 @@ if __name__ == "__main__":
     print(f"Running with following CLI options: {args}")
 
     ray.init(local_mode=args.local_mode)
+    
     config = {'Folder_Output': '',
         'Weather_file': '',
         'epJSON_file': '',
@@ -511,7 +512,7 @@ if __name__ == "__main__":
         'RAY_DISABLE_MEMORY_MONITOR': 1
         }
 
-    # register_env("EPEnv", lambda config: EnergyPlusEnv(config))
+    register_env("EPEnv", lambda config: EnergyPlusEnv(config))
 
     ModelCatalog.register_custom_model("EPEnv", EnergyPlusEnv)
 
@@ -542,11 +543,11 @@ if __name__ == "__main__":
         if args.run != "PPO":
             raise ValueError("Only support --run PPO with --no-tune.")
         print("Running manual train loop without Ray Tune.")
-        ppo_config = ppo.DEFAULT_CONFIG.copy()
+        ppo_config = PPOTrainer.DEFAULT_CONFIG.copy()
         ppo_config.update(config)
         # use fixed learning rate instead of grid search (needs tune)
         ppo_config["lr"] = 1e-3
-        trainer = ppo.PPO(config=ppo_config, env=SimpleCorridor)
+        trainer = PPOTrainer(config=ppo_config, env="EPEnv")
         # run manual training loop and print results after each iteration
         for _ in range(args.stop_iters):
             result = trainer.train()
