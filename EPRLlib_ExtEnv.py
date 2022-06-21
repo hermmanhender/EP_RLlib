@@ -64,20 +64,13 @@ parser.add_argument(
 
 
 
+
 class EnergyPlusEnv(ExternalEnv):
     """
     EnergyPlus Externall Environment
     """
-    def __init__(self):
-        
-        # Se invoca al constructor de la clase ExternalEnv
-        ExternalEnv.__init__(ExternalEnv,
-            action_space=spaces.Discrete(32), # son 5 accionables binarios y su combinatoria es 2^5
-            observation_space=spaces.Box(float("-inf"), float("inf"), (7,)),
-            max_concurrent=100
-            )
-        
-        self.config = {
+    def __init__(self,
+        env_config = {
             'Folder_Output': '',
             'Weather_file': '',
             'epJSON_file': '',
@@ -95,43 +88,68 @@ class EnergyPlusEnv(ExternalEnv):
             'directorio': '',
             'ruta_base': 'C:/Users/grhen/Documents/GitHub/EP_RLlib',
             'ruta': 'A', # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
-            'RAY_DISABLE_MEMORY_MONITOR': 1
             }
+        ):
+        
+        # Se invoca al constructor de la clase ExternalEnv
+        ExternalEnv.__init__(ExternalEnv,
+            action_space=spaces.Discrete(32), # son 5 accionables binarios y su combinatoria es 2^5
+            observation_space=spaces.Box(float("-inf"), float("inf"), (7,)),
+            max_concurrent=100
+            )
+        
+        self.Folder_Output = env_config['Folder_Output']
+        self.Weather_file = env_config['Weather_file']
+        self.epJSON_file = env_config['epJSON_file']
+        self.episode = env_config['episode']
+        self.last_observation = env_config['last_observation']
+        self.T_SP = env_config['T_SP']
+        self.dT_up = env_config['dT_up']
+        self.dT_dn = env_config['dT_dn']
+        self.SP_RH = env_config['SP_RH']
+        self.nombre_caso = env_config['nombre_caso']
+        self.rho = env_config['rho']
+        self.beta = env_config['beta']
+        self.psi = env_config['psi']
+        self.first_time_step = env_config['first_time_step']
+        self.directorio = env_config['directorio']
+        self.ruta_base = env_config['ruta_base']
+        self.ruta = env_config['ruta']
 
         """
         Se establece la ruta base de los datos del programa
         """
         # Estas rutas deben coincidir con las del ordenador que se está utilizando
-        if self.config['ruta'] == "A":
-            self.config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/EP_RLlib'
+        if self.ruta == "A":
+            self.ruta_base = 'C:/Users/grhen/Documents/GitHub/EP_RLlib'
             self.ruta_resultados = 'C:/Users/grhen/Documents/RLforEP_Resultados'
 
-        elif self.config['ruta'] == "B":
-            self.config['ruta_base'] = 'D:/GitHub/EP_RLlib'
+        elif self.ruta == "B":
+            self.ruta_base = 'D:/GitHub/EP_RLlib'
             self.ruta_resultados = 'D:/Resultados_RLforEP'
-        elif self.config['ruta'] == "C":
-            self.config['ruta_base'] = 'D:/GitHub/EP_RLlib'
+        elif self.ruta == "C":
+            self.ruta_base = 'D:/GitHub/EP_RLlib'
             self.ruta_resultados = 'D:/Resultados_RLforEP'
         else:
-            self.config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/EP_RLlib'
+            self.ruta_base = 'C:/Users/grhen/Documents/GitHub/EP_RLlib'
             self.ruta_resultados = 'C:/Users/grhen/Documents/RLforEP_Resultados'
 
         fecha = str(time.strftime('%y-%m-%d'))
         hora = str(time.strftime('%H-%M'))
-        caso = config['nombre_caso']
-        self.config['directorio'] = self.ruta_resultados + '/' + fecha + '-'+ hora + '_'+ caso
+        caso = self.nombre_caso
+        self.directorio = self.ruta_resultados + '/' + fecha + '-'+ hora + '_'+ caso
         try:
-            os.mkdir(self.config['directorio'])
-            os.mkdir(self.config['directorio']+'/Resultados')
+            os.mkdir(self.directorio)
+            os.mkdir(self.directorio+'/Resultados')
         except OSError:
             time.sleep(60)
-            os.mkdir(self.config['directorio'])
-            os.mkdir(self.config['directorio']+'/Resultados')
-            print("Se ha creado el directorio: %s " % self.config['directorio'])
+            os.mkdir(self.directorio)
+            os.mkdir(self.directorio+'/Resultados')
+            print("Se ha creado el directorio: %s " % self.directorio)
         except:
-            print("La creación del directorio %s falló" % self.config['directorio'])
+            print("La creación del directorio %s falló" % self.directorio)
         else:
-            print("Se ha creado el directorio: %s " % self.config['directorio'])
+            print("Se ha creado el directorio: %s " % self.directorio)
 
         #shutil.copy(config['ruta_base'] + '/experimento_parametros.json', config['directorio'] + '/Resultados/experimento_parametros.json')
         
@@ -140,27 +158,24 @@ class EnergyPlusEnv(ExternalEnv):
         # Para versión 960
         #shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_vent_m.epJSON', config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON')
         # Para versión 2210
-        shutil.copy(self.config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_V2210.epJSON', self.config['directorio'] + '/Resultados/modelo_simple.epJSON')
-        shutil.copy(self.config['ruta_base'] + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', self.config['directorio'] + '/Resultados/Observatorio-hour_2.epw')
+        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/modelo_simple_V2210.epJSON', self.directorio + '/Resultados/modelo_simple.epJSON')
+        shutil.copy(self.ruta_base + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', self.directorio + '/Resultados/Observatorio-hour_2.epw')
 
-        shutil.copy(self.config['ruta_base'] + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', self.config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
-        shutil.copy(self.config['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_C_0.csv', self.config['directorio'] + '/Resultados/RL_Aviability_Sch_C_0.csv')
-        shutil.copy(self.config['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_R_0.csv', self.config['directorio'] + '/Resultados/RL_Aviability_Sch_R_0.csv')
-        shutil.copy(self.config['ruta_base'] + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', self.config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
-        shutil.copy(self.config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', self.config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
+        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', self.directorio + '/Resultados/RL_Control_Sch_0.csv')
+        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/RL_Aviability_Sch_C_0.csv', self.directorio + '/Resultados/RL_Aviability_Sch_C_0.csv')
+        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/RL_Aviability_Sch_R_0.csv', self.directorio + '/Resultados/RL_Aviability_Sch_R_0.csv')
+        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', self.directorio + '/Resultados/VentS_Aviability_Sch_0.csv')
+        shutil.copy(self.ruta_base + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', self.directorio + '/Resultados/VentN_Aviability_Sch_0.csv')
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
-        #output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]
         output = [('rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
-        #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
-        #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_comp.csv', mode="w", index=False, header=False)
-        pd.DataFrame(output).to_csv(self.config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
+        pd.DataFrame(output).to_csv(self.directorio + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
           
-        #config['directorio'] = EPExternalEnv.directorio(EPExternalEnv)
+        
 
-        self.config['Folder_Output'] = self.config['directorio']
-        self.config['Weather_file'] = self.config['directorio'] + '/Resultados/Observatorio-hour_2.epw'
-        self.config['epJSON_file'] = self.config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON'
+        self.Folder_Output = self.directorio
+        self.Weather_file = self.directorio + '/Resultados/Observatorio-hour_2.epw'
+        self.epJSON_file = self.directorio + '/Resultados/modelo_simple_vent_m.epJSON'
 
     @override(ExternalEnv)
     def run(self):
@@ -194,18 +209,18 @@ class EnergyPlusEnv(ExternalEnv):
             if final_day == 0:
                 final_day = init_day
             
-            epJSON_file_old = MainFunctions.MainFunctions.read_epjson(self.config['directorio'] + '/Resultados/modelo_simple.epJSON')
+            epJSON_file_old = MainFunctions.MainFunctions.read_epjson(self.directorio + '/Resultados/modelo_simple.epJSON')
             LocationClimate.RunPeriod.begin_day_of_month(epJSON_file_old, "DDMM", init_day)
             LocationClimate.RunPeriod.begin_month(epJSON_file_old, "DDMM", init_month)
             LocationClimate.RunPeriod.end_day_of_month(epJSON_file_old, "DDMM", final_day)
             LocationClimate.RunPeriod.end_month(epJSON_file_old, "DDMM", final_month)
-            Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_R", self.config['directorio'] + '/Resultados/RL_Aviability_Sch_R_0.csv')
-            Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_C", self.config['directorio'] + '/Resultados/RL_Aviability_Sch_C_0.csv')
-            Schedules.Schedule_File.file_name(epJSON_file_old, "Shadow_Control", self.config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
-            Schedules.Schedule_File.file_name(epJSON_file_old, "VentN_Control", self.config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
-            Schedules.Schedule_File.file_name(epJSON_file_old, "VentS_Control", self.config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
-            MainFunctions.MainFunctions.write_epjson(self.config['directorio'] + '/Resultados/new.epJSON', epJSON_file_old)
-            epJSON_new = self.config['directorio'] + '/Resultados/new.epJSON'
+            Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_R", self.directorio + '/Resultados/RL_Aviability_Sch_R_0.csv')
+            Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_C", self.directorio + '/Resultados/RL_Aviability_Sch_C_0.csv')
+            Schedules.Schedule_File.file_name(epJSON_file_old, "Shadow_Control", self.directorio + '/Resultados/RL_Control_Sch_0.csv')
+            Schedules.Schedule_File.file_name(epJSON_file_old, "VentN_Control", self.directorio + '/Resultados/VentN_Aviability_Sch_0.csv')
+            Schedules.Schedule_File.file_name(epJSON_file_old, "VentS_Control", self.directorio + '/Resultados/VentS_Aviability_Sch_0.csv')
+            MainFunctions.MainFunctions.write_epjson(self.directorio + '/Resultados/new.epJSON', epJSON_file_old)
+            epJSON_new = self.directorio + '/Resultados/new.epJSON'
 
             return epJSON_new
 
@@ -244,7 +259,7 @@ class EnergyPlusEnv(ExternalEnv):
 
                     # Se inicia el episodio en el servidor
                     if time_step + (hour * num_time_steps_in_hour) == 1:
-                        self.config['episode'] = self.start_episode()
+                        self.episode = self.start_episode()
 
                     '''Lectura de los handles'''
                     # Handles are needed before call the values that are inside them.
@@ -273,7 +288,7 @@ class EnergyPlusEnv(ExternalEnv):
                     
                     # the values are saved in a dictionary to compose the observation (or state)
                     s_cont_tp1 = [rad, Bw, To, Ti, v, d, RHi]
-                    self.config['last_observation'] = s_cont_tp1
+                    self.last_observation = s_cont_tp1
 
                     """
                     CÁLCULO DE ENERGÍA, CONFORT Y RECOMPENSA
@@ -326,7 +341,7 @@ class EnergyPlusEnv(ExternalEnv):
                     """
 
                     # La recompensa es calculada a partir de la energía y los minutos de confort
-                    r_tp1 = - e_tp1 - self.config['rho']*(c_tp1**2)
+                    r_tp1 = - e_tp1 - self.rho*(c_tp1**2)
 
                     """
                     # Se evalúa el confort higro-térmico
@@ -356,17 +371,17 @@ class EnergyPlusEnv(ExternalEnv):
 
                     if self.config['first_time_step'] == False:
                         self.log_returns(
-                            self.config['episode'],
+                            self.episode,
                             r_tp1,
                             {}
                             )
 
 
-                    if self.config['first_time_step'] == True:
-                        self.config['first_time_step'] = False
+                    if self.first_time_step == True:
+                        self.first_time_step = False
 
                     """Se obtiene la acción de RLlib"""
-                    a_tp1 = self.get_action(self.config['episode'], s_cont_tp1)
+                    a_tp1 = self.get_action(self.episode, s_cont_tp1)
                     
                     """
                     SE REALIZAN LAS ACCIONES EN EL SIMULADOR
@@ -433,7 +448,7 @@ class EnergyPlusEnv(ExternalEnv):
                     SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                     """
                     output = [(rad, Bw, To, Ti, v, d, RHi, a_tp1, a_tp1_R, a_tp1_C, a_tp1_p, a_tp1_vn, a_tp1_vs, r_tp1, e_tp1, c_tp1)]
-                    pd.DataFrame(output).to_csv(self.config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
+                    pd.DataFrame(output).to_csv(self.directorio + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
                                     
 
                     '''Se ejecutan las acciones en el paso de tiempo actual'''
@@ -447,9 +462,9 @@ class EnergyPlusEnv(ExternalEnv):
                     api.exchange.set_actuator_value(state, VentS_ControlHandle, a_tp1_vs)
 
                     if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
-                        self.end_episode(self.config['episode'], self.config['last_observation'])
+                        self.end_episode(self.episode, self.last_observation)
                         output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
-                        pd.DataFrame(output).to_csv(self.config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
+                        pd.DataFrame(output).to_csv(self.directorio + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
 
         # se establece un estado en el simulador (indispensable)
         state = api.state_manager.new_state()
@@ -465,12 +480,12 @@ class EnergyPlusEnv(ExternalEnv):
         day = 1
         #final_month = 3
         #final_day = 31
-        self.config['epJSON_file'] = episode_epJSON(self, month, day) #, final_month, final_day)
+        self.epJSON_file = episode_epJSON(self, month, day) #, final_month, final_day)
         # se corre el simulador
         try:
-            api.runtime.run_energyplus(state, ['-d', self.config['Folder_Output'], '-w', self.config['Weather_file'], self.config['epJSON_file']])
+            api.runtime.run_energyplus(state, ['-d', self.Folder_Output, '-w', self.Weather_file, self.epJSON_file])
         except:
-            api.runtime.run_energyplus(state, ['-d', self.config['Folder_Output'], '-w', self.config['Weather_file'], self.config['epJSON_file']])
+            api.runtime.run_energyplus(state, ['-d', self.Folder_Output, '-w', self.Weather_file, self.epJSON_file])
         # se elimina el estado para evitar posibles errores en la memoria (opcional)(con la versión EP 960
         # esto arroja error)
 
