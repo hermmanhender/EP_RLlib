@@ -14,11 +14,10 @@ from gym import spaces
 from ray.rllib.utils.annotations import override
 from ray.rllib.env.external_env import ExternalEnv
 
-
 import argparse
 import ray
 from ray import tune
-from ray.rllib.agents.ppo import PPOTrainer
+from ray.rllib.agents.dqn import DQNTrainer
 from ray.rllib.utils.framework import try_import_tf, try_import_torch
 from ray.rllib.utils.test_utils import check_learning_achieved
 from ray.tune.logger import pretty_print
@@ -66,9 +65,19 @@ parser.add_argument(
 
 
 class EnergyPlusEnv(ExternalEnv):
-    
-    def __init__(self,
-        config = {
+    """
+    EnergyPlus Externall Environment
+    """
+    def __init__(self):
+        
+        # Se invoca al constructor de la clase ExternalEnv
+        ExternalEnv.__init__(ExternalEnv,
+            action_space=spaces.Discrete(32), # son 5 accionables binarios y su combinatoria es 2^5
+            observation_space=spaces.Box(float("-inf"), float("inf"), (7,)),
+            max_concurrent=100
+            )
+        
+        self.config = {
             'Folder_Output': '',
             'Weather_file': '',
             'epJSON_file': '',
@@ -88,22 +97,6 @@ class EnergyPlusEnv(ExternalEnv):
             'ruta': 'A', # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
             'RAY_DISABLE_MEMORY_MONITOR': 1
             }
-        ):
-        """Initializes an ExternalEnv instance.
-
-        Args:
-            action_space: Action space of the env.
-            observation_space: Observation space of the env.
-            max_concurrent: Max number of active episodes to allow at
-                once. Exceeding this limit raises an error.
-        """
-        # Se invoca al constructor de la clase ExternalEnv
-        ExternalEnv.__init__(
-            action_space=spaces.Discrete(32), # son 5 accionables binarios y su combinatoria es 2^5
-            observation_space=spaces.Box(float("-inf"), float("inf"), (7,)),
-            max_concurrent=100
-            )
-        
 
         """
         Se establece la ruta base de los datos del programa
@@ -333,7 +326,7 @@ class EnergyPlusEnv(ExternalEnv):
                     """
 
                     # La recompensa es calculada a partir de la energía y los minutos de confort
-                    r_tp1 = - e_tp1 - config['rho']*(c_tp1**2)
+                    r_tp1 = - e_tp1 - self.config['rho']*(c_tp1**2)
 
                     """
                     # Se evalúa el confort higro-térmico
@@ -484,87 +477,11 @@ class EnergyPlusEnv(ExternalEnv):
 
 
 if __name__ == "__main__":
-    
-    from ray.rllib.models import ModelCatalog
-    
+        
     args = parser.parse_args()
     print(f"Running with following CLI options: {args}")
 
     ray.init(local_mode=args.local_mode)
-    
-    config = {'Folder_Output': '',
-        'Weather_file': '',
-        'epJSON_file': '',
-        'episode': "",
-        'last_observation': [],
-        'T_SP': 24.,
-        'dT_up': 1.,
-        'dT_dn': 4.,
-        'SP_RH': 70.,
-        'nombre_caso': "fanger_comfort", # Se utiliza para identificar la carpeta donde se guardan los datos
-        'rho': 10, # Temperatura: default: 0.25
-        'beta': 1, # Energía: default: 20
-        'psi': 0, # Humedad relativa: default: 0.005
-        'first_time_step': True,
-        'directorio': '',
-        'ruta_base': 'C:/Users/grhen/Documents/GitHub/EP_RLlib',
-        'ruta': 'A', # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
-        'RAY_DISABLE_MEMORY_MONITOR': 1
-        }
-
-    register_env("EPEnv", lambda config: EnergyPlusEnv(config))
-
-    ModelCatalog.register_custom_model("EPEnv", EnergyPlusEnv)
 
 
-    config = {
-        "env": "EPEnv",
-        "env_config": {
-            "corridor_length": 5,
-        },
-        # Use GPUs iff `RLLIB_NUM_GPUS` env var set to > 0.
-        "num_gpus": int(os.environ.get("RLLIB_NUM_GPUS", "0")),
-        "model": {
-            "custom_model": "my_model",
-            "vf_share_layers": True,
-        },
-        "num_workers": 1,  # parallelism
-        "framework": args.framework,
-    }
-
-    stop = {
-        "training_iteration": args.stop_iters,
-        "timesteps_total": args.stop_timesteps,
-        "episode_reward_mean": args.stop_reward,
-    }
-
-    if args.no_tune:
-        # manual training with train loop using PPO and fixed learning rate
-        if args.run != "PPO":
-            raise ValueError("Only support --run PPO with --no-tune.")
-        print("Running manual train loop without Ray Tune.")
-        ppo_config = PPOTrainer.DEFAULT_CONFIG.copy()
-        ppo_config.update(config)
-        # use fixed learning rate instead of grid search (needs tune)
-        ppo_config["lr"] = 1e-3
-        trainer = PPOTrainer(config=ppo_config, env="EPEnv")
-        # run manual training loop and print results after each iteration
-        for _ in range(args.stop_iters):
-            result = trainer.train()
-            print(pretty_print(result))
-            # stop training of the target train steps or reward are reached
-            if (
-                result["timesteps_total"] >= args.stop_timesteps
-                or result["episode_reward_mean"] >= args.stop_reward
-            ):
-                break
-    else:
-        # automated run with Tune and grid search and TensorBoard
-        print("Training automatically with Ray Tune")
-        results = tune.run(args.run, config=config, stop=stop)
-
-        if args.as_test:
-            print("Checking if learning goals were achieved")
-            check_learning_achieved(results, args.stop_reward)
-
-    ray.shutdown()
+    tune.run("PPO", config={"env":EnergyPlusEnv})
