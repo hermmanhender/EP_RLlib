@@ -139,6 +139,10 @@ class environment():
         api.state_manager.reset_state(state)
         # se establece el punto de llamado para el intercambio de información con el simulador
         api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, self.EP_exchange_function)
+        
+        api.runtime.callback_end_zone_timestep_before_zone_reporting(state, self.EP_exchange_function_final)
+        
+        api.runtime.set_console_output_status(state, False)
         # Se establece un dia random como periodo de duracion del episodio
         #month, day = self.random_run_date(self)
         # Si se quiere definir un periodo determinado, utilizar la siguiente parte del codigo
@@ -277,7 +281,7 @@ class environment():
 
                 # The energy consumption e is equal to the q_supp value but in kWh not in J
                 e_tp1 = (q_R + q_C)/(3.6*1000000)
-
+                """
                 # Handle for Fanger PPD (range 0 - 100)
                 # This field is the “predicted percentage of dissatisfied” (PPD) calculated using the Fanger thermal
                 # comfort model. Details on the equations used to calculate the Fanger PPD are shown in the EnergyPlus
@@ -313,8 +317,8 @@ class environment():
                 else:
                     print("Comfort not founded.")
                     c_tp1 = -1
+                
                 """
-
                 # La recompensa es calculada a partir de la energía y los minutos de confort
                 r_tp1 = - e_tp1 - config['rho']*(c_tp1**2)
 
@@ -342,18 +346,18 @@ class environment():
                     r_energia = config['beta'] # recompensa por energía
                 
                 r_tp1 = r_energia + r_temp + r_hr
-                """
+                
 
-                if config['first_time_step'] == False:
+                """if config['first_time_step'] == False:
                     print("Se envían las recompensas para su registro en el aprendizaje.")
-                    client.log_returns(str(config['episode']), r_tp1, {})
+                    client.log_returns(str(config['episode']), r_tp1, {})"""
 
 
                 if config['first_time_step'] == True:
                     config['first_time_step'] = False
 
                 """Se obtiene la acción de RLlib"""
-                print("Se obtiene una acción del agente.")
+                #print("Se obtiene una acción del agente.")
                 a_tp1 = client.get_action(str(config['episode']), s_cont_tp1)
                 
                 """
@@ -422,8 +426,9 @@ class environment():
                 """
                 output = [(rad, Bw, To, Ti, v, d, RHi, a_tp1, a_tp1_R, a_tp1_C, a_tp1_p, a_tp1_vn, a_tp1_vs, r_tp1, e_tp1, c_tp1)]
                 pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
-                                
-
+                """weights = client.GET_WEIGHTS
+                pd.DataFrame(weights).to_csv(config['directorio'] + '/Resultados/weights.csv', mode="a", index=False, header=False)
+"""
                 '''Se ejecutan las acciones en el paso de tiempo actual'''
                 # Aquí se está enviando información al simulador, asignando las acciones en cada uno
                 # de los elementos accionables (en este caso se realiza a través de un calendario de
@@ -434,13 +439,122 @@ class environment():
                 api.exchange.set_actuator_value(state, VentN_ControlHandle, a_tp1_vn)
                 api.exchange.set_actuator_value(state, VentS_ControlHandle, a_tp1_vs)
 
+                """if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
+                    print("Se finaliza el episodio.")
+                    client.end_episode(str(config['episode']), config['last_observation'])
+                    config['episode'] = config['episode'] + 1
+                    output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
+                    pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
+                """
+    def EP_exchange_function_final(state):
+        '''
+        # Callback function for EnergyPlus
+
+        Este método permite el intercambio de información (entrada y salida) entre el simulador
+        EnergyPlus y un ejecutor de decisiones. El objeto de la creación de este método es poder 
+        realizar aprendizaje automático sobre las decisiones de un edificio a partir de la utilización
+        de aprendizaje por refuerzos.
+        '''
+        # The variables of the experiment, case and episode can not be called in the method's variables
+        # and due that are called here as global variables.
+        # conf_experimento are those which no change in all the run. var_case_n are those which change only
+        # between configurations (ej. the learning rate tuning). var_step_t are those which change inside the
+        # episode by step times.
+
+        #Condición necesaria para leer las variables disponibles en EP a solicitar
+        if api.exchange.api_data_fully_ready(state):
+            
+            #Condición para que no se escriban los datos durante el periodo de calentamiento
+            if api.exchange.warmup_flag(state) == 0:
+                
+                """
+                LECTURA DE VARIABLES DE ESTADO (s_tp1)
+                """
+                '''Lectura de algunas variables'''
+                # num_time_steps_in_hour is used to compute the n-step_max in a episode and the quantity of
+                # minutes of comfort
+                num_time_steps_in_hour = api.exchange.num_time_steps_in_hour(state)
+                # time_step and hour are needed to obtain the radiation rad
+                # time step is based on data of EP and is in range between one hour
+                time_step = api.exchange.zone_time_step_number(state)
+                hour = api.exchange.hour(state)
+
+                '''Lectura de los handles'''
+                # Handles are needed before call the values that are inside them.
+                # hadle for the radiation in the plane of the windows
+                Bw_handle = api.exchange.get_variable_handle(state, "Surface Outside Face Incident Solar Radiation Rate per Area", "Zn001:Wall001:Win001")
+                # handle for the outside temperature
+                To_handle = api.exchange.get_variable_handle(state, "Site Outdoor Air Drybulb Temperature", "Environment")
+                # hadle for the inside (zone) temperature
+                Ti_handle = api.exchange.get_variable_handle(state, "Zone Mean Air Temperature", "Thermal Zone: Modelo_Simple")
+                # handle for wind speed in the site
+                v_handle = api.exchange.get_variable_handle(state, "Site Wind Speed", "Environment")
+                # handle for direction of the wind
+                d_handle = api.exchange.get_variable_handle(state, "Site Wind Direction", "Environment")
+                # handle for the inside relativ humidity
+                RHi_handle = api.exchange.get_variable_handle(state,"Zone Air Relative Humidity", "Thermal Zone: Modelo_Simple")
+
+                '''Lectura de las variables de estado'''
+                # Here the values of the handles are consulting
+                rad = api.exchange.today_weather_beam_solar_at_time(state, hour, time_step)
+                Bw = api.exchange.get_variable_value(state, Bw_handle)
+                To = api.exchange.get_variable_value(state, To_handle)
+                Ti = api.exchange.get_variable_value(state, Ti_handle)
+                v = api.exchange.get_variable_value(state, v_handle)
+                d = api.exchange.get_variable_value(state, d_handle)
+                RHi = api.exchange.get_variable_value(state, RHi_handle)
+                
+                # the values are saved in a dictionary to compose the observation (or state)
+                s_cont_tp1 = [rad, Bw, To, Ti, v, d, RHi]
+                config['last_observation'] = s_cont_tp1
+
+                """
+                CÁLCULO DE ENERGÍA, CONFORT Y RECOMPENSA
+                """
+                # handle for the energy consumption for cooling
+                q_R_handle = api.exchange.get_meter_handle(state, 'Cooling:DistrictCooling')
+                q_R = api.exchange.get_meter_value(state, q_R_handle)
+
+                q_C_handle = api.exchange.get_meter_handle(state, 'Heating:DistrictHeating')
+                q_C = api.exchange.get_meter_value(state, q_C_handle)
+
+                # The energy consumption e is equal to the q_supp value but in kWh not in J
+                e_tp1 = (q_R + q_C)/(3.6*1000000)
+                
+                # Se evalúa el confort higro-térmico
+                if Ti > config['T_SP'] + config['dT_up'] or Ti < config['T_SP'] - config['dT_dn']:
+                    if RHi > config['SP_RH']:
+                        r_temp = - config['rho']*(Ti - config['T_SP'])**2 # penalización por temperatura
+                        r_hr = - config['psi']*(RHi - config['SP_RH'])**2 # penalización por humedad
+                    else:
+                        r_temp = - config['rho']*(Ti - config['T_SP'])**2 # penalización por temperatura
+                        r_hr = config['psi'] * 10 # recompensa por humedad
+
+                elif RHi > config['SP_RH']:
+                    r_temp = config['rho'] * 100 # recompensa por temperatura
+                    r_hr = - config['psi']*(RHi - config['SP_RH'])**2 # penalización por humedad
+
+                else:
+                    r_temp = config['rho'] * 100 # recompensa por temperatura
+                    r_hr = config['psi'] * 10 # recompensa por humedad
+                # Se evalúa el uso de energía
+                if e_tp1 > 0:
+                    r_energia = - config['beta']*e_tp1 # penalización por energía
+                else:
+                    r_energia = config['beta'] # recompensa por energía
+                
+                r_tp1 = r_energia + r_temp + r_hr
+                
+
+                #print("Se envían las recompensas para su registro en el aprendizaje.")
+                client.log_returns(str(config['episode']), r_tp1, {})
+
                 if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
                     print("Se finaliza el episodio.")
                     client.end_episode(str(config['episode']), config['last_observation'])
                     config['episode'] = config['episode'] + 1
                     output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
                     pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
-
 
 
 parser = argparse.ArgumentParser()
