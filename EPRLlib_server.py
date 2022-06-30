@@ -126,7 +126,7 @@ def get_cli_args():
     parser.add_argument(
         "--stop-timesteps",
         type=int,
-        default=5000,
+        default=50000,
         help="Number of timesteps to train.",
     )
     parser.add_argument(
@@ -232,7 +232,7 @@ if __name__ == "__main__":
             {
                 "learning_starts": 100,
                 "timesteps_per_iteration": 200,
-                "n_step": 10, # Tamaño del bache de datos
+                "n_step": 20, # Tamaño del bache de datos
             }
         )
         config["model"] = {
@@ -357,14 +357,14 @@ if __name__ == "__main__":
         your training. The following example shows you how to access various metrics from an analysis
         object, like the best available trial, or the best hyperparameter configuration for that trial:
         """
-        best_trial = analysis.best_trial  # Get best trial
-        best_config = analysis.best_config  # Get best trial's hyperparameters
-        best_logdir = analysis.best_logdir  # Get best trial's logdir
-        best_checkpoint = analysis.best_checkpoint  # Get best trial's best checkpoint
-        best_result = analysis.best_result  # Get best trial's last results
-        best_result_df = analysis.best_result_df  # Get best result as pandas dataframe
+        best_trial = analysis.get_best_trial()  # Get best trial
+        best_config = analysis.get_best_config()  # Get best trial's hyperparameters
+        best_logdir = analysis.get_best_logdir()  # Get best trial's logdir
+        best_checkpoint = analysis.get_best_checkpoint()  # Get best trial's best checkpoint
+        best_result = analysis.get_best_trial().last_result  # Get best trial's last results
+        best_result_df = analysis.get_best_trial().last_result  # Get best result as pandas dataframe
         
-        best_result_df.to_csv()
+        best_result_df.to_csv(config['directorio'] + '/Resultados/best_result.csv', mode="w", index=False, header=False)
 
         """
         This object can also retrieve all training runs as dataframes, allowing you to do ad-hoc
