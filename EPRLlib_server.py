@@ -42,6 +42,11 @@ from ray.rllib.env.policy_server_input import PolicyServerInput
 from ray.rllib.examples.custom_metrics_and_callbacks import MyCallbacks
 from ray.tune.logger import pretty_print
 
+
+from hyperopt import hp
+from ray.tune.search.hyperopt import HyperOptSearch
+
+
 # Se define la direccion del servidor. Se puede indicar un IP o bien con
 # el comando "localhost" definir el IP local, el cual lo busca automaticamente
 SERVER_ADDRESS = "localhost"
@@ -311,11 +316,28 @@ if __name__ == "__main__":
         # configure how checkpoints are sync'd to the scheduler/sampler
         sync_config = tune.SyncConfig()  # the default mode is to use use rsync
 
+        
+
+        space = {
+            "lr": hp.loguniform("lr", 1e-10, 0.1),
+            "momentum": hp.uniform("momentum", 0.1, 0.9),
+            }
+
+        hyperopt_search = HyperOptSearch(space, metric="mean_accuracy", mode="max")
+
+        # To enable GPUs, use this instead:
+        # analysis = tune.run(
+        #     train_mnist, config=search_space, resources_per_trial={'gpu': 1})
+
+
+
         analysis = tune.run(
             args.run,
             config=config,
             stop=stop,
             verbose=2,
+
+            search_alg=hyperopt_search,
 
             # if you would like to collect the stream outputs in files for later analysis or
             # troubleshooting, Tune offers an utility parameter, log_to_file, for this.
