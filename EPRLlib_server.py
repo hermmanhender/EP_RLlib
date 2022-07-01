@@ -43,9 +43,9 @@ from ray.rllib.examples.custom_metrics_and_callbacks import MyCallbacks
 from ray.tune.logger import pretty_print
 
 
-from hyperopt import hp
+#from hyperopt import hp
 
-from ray.tune.search.hyperopt import HyperOptSearch
+#from ray.tune.suggest.hyperopt import HyperOptSearch
 
 
 # Se define la direccion del servidor. Se puede indicar un IP o bien con
@@ -231,7 +231,9 @@ if __name__ == "__main__":
         # Example of using DQN (supports off-policy actions).
         config.update(
             {
-                "learning_starts": 100,
+                "replay_buffer_config": {
+                    "learning_starts":100
+                    },
                 "timesteps_per_iteration": 200,
                 "n_step": 20, # Tamaño del bache de datos
             }
@@ -311,21 +313,18 @@ if __name__ == "__main__":
         stop = {
             "training_iteration": args.stop_iters,
             "timesteps_total": args.stop_timesteps,
-            "mean_accuracy": 0.98,
+            #"mean_accuracy": 0.98,
         }
         print("Se realiza un tuneo de los parametros.")
 
         # configure how checkpoints are sync'd to the scheduler/sampler
         sync_config = tune.SyncConfig()  # the default mode is to use use rsync
 
+        #space = {
+        #    "lr": hp.loguniform("lr", 1e-10, 0.1)
+        #    }
         
-        """
-        config.update({
-            "lr": hp.loguniform("lr", 1e-10, 0.1)
-            })
-        """
-
-        # hyperopt_search = HyperOptSearch(space, metric="mean_accuracy", mode="max")
+        #hyperopt_search = HyperOptSearch(space, metric="mean_accuracy", mode="max")
 
         # To enable GPUs, use this instead:
         # analysis = tune.run(
@@ -338,8 +337,9 @@ if __name__ == "__main__":
             config=config,
             stop=stop,
             verbose=2,
+            #metric="mean_accuracy",
 
-            # search_alg=hyperopt_search,
+            #search_alg=hyperopt_search,
 
             # if you would like to collect the stream outputs in files for later analysis or
             # troubleshooting, Tune offers an utility parameter, log_to_file, for this.
