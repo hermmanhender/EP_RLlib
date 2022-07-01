@@ -129,12 +129,7 @@ def get_cli_args():
         default=50000,
         help="Number of timesteps to train.",
     )
-    parser.add_argument(
-        "--stop-reward",
-        type=float,
-        default=10000.0,
-        help="Reward at which we stop training.",
-    )
+    
     parser.add_argument(
         "--as-test",
         action="store_true",
@@ -310,7 +305,6 @@ if __name__ == "__main__":
         stop = {
             "training_iteration": args.stop_iters,
             "timesteps_total": args.stop_timesteps,
-            "episode_reward_mean": args.stop_reward,
         }
         print("Se realiza un tuneo de los parametros.")
 
@@ -360,7 +354,7 @@ if __name__ == "__main__":
         best_trial = analysis.get_best_trial()  # Get best trial
         best_config = analysis.get_best_config()  # Get best trial's hyperparameters
         best_logdir = analysis.get_best_logdir()  # Get best trial's logdir
-        best_checkpoint = analysis.get_best_checkpoint()  # Get best trial's best checkpoint
+        best_checkpoint = analysis.get_best_checkpoint(best_trial)  # Get best trial's best checkpoint
         best_result = analysis.get_best_trial().last_result  # Get best trial's last results
         best_result_df = analysis.get_best_trial().last_result  # Get best result as pandas dataframe
         
