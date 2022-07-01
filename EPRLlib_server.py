@@ -44,8 +44,9 @@ from ray.tune.logger import pretty_print
 
 
 from hyperopt import hp
+"""
 from ray.tune.search.hyperopt import HyperOptSearch
-
+"""
 
 # Se define la direccion del servidor. Se puede indicar un IP o bien con
 # el comando "localhost" definir el IP local, el cual lo busca automaticamente
@@ -317,11 +318,11 @@ if __name__ == "__main__":
         sync_config = tune.SyncConfig()  # the default mode is to use use rsync
 
         
-
-        space = {
-            "lr": hp.loguniform("lr", 1e-10, 0.1),
-            "momentum": hp.uniform("momentum", 0.1, 0.9),
-            }
+        """
+        config.update({
+            "lr": hp.loguniform("lr", 1e-10, 0.1)
+            })
+        """
 
         # hyperopt_search = HyperOptSearch(space, metric="mean_accuracy", mode="max")
 
@@ -333,7 +334,7 @@ if __name__ == "__main__":
 
         analysis = tune.run(
             args.run,
-            config=space,
+            config=config,
             stop=stop,
             verbose=2,
 
