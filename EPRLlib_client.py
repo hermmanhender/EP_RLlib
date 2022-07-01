@@ -144,13 +144,13 @@ class environment():
         
         api.runtime.set_console_output_status(state, False)
         # Se establece un dia random como periodo de duracion del episodio
-        #month, day = self.random_run_date(self)
+        month, day = self.random_run_date(self)
         # Si se quiere definir un periodo determinado, utilizar la siguiente parte del codigo
-        month = 1
+        """month = 1
         day = 1
         final_month = 1
-        final_day = 7
-        config['epJSON_file'] = self.episode_epJSON(self, month, day, final_month, final_day)
+        final_day = 7"""
+        config['epJSON_file'] = self.episode_epJSON(self, month, day)
         # se corre el simulador
         try:
             api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])

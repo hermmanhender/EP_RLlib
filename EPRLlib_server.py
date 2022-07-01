@@ -125,13 +125,13 @@ def get_cli_args():
     parser.add_argument(
         "--stop-iters",
         type=int,
-        default=4800,
+        default=300,
         help="Number of iterations to train."
     )
     parser.add_argument(
         "--stop-timesteps",
         type=int,
-        default=50000,
+        default=200000,
         help="Number of timesteps to train.",
     )
     
@@ -155,7 +155,7 @@ def get_cli_args():
 
     parser.add_argument(
         "--checkpoint-freq",
-        default=2400,
+        default=4800,
         help="In order to save checkpoints from which to evaluate policies",
     )
 
@@ -323,7 +323,7 @@ if __name__ == "__main__":
             "momentum": hp.uniform("momentum", 0.1, 0.9),
             }
 
-        hyperopt_search = HyperOptSearch(space, metric="mean_accuracy", mode="max")
+        # hyperopt_search = HyperOptSearch(space, metric="mean_accuracy", mode="max")
 
         # To enable GPUs, use this instead:
         # analysis = tune.run(
@@ -333,11 +333,11 @@ if __name__ == "__main__":
 
         analysis = tune.run(
             args.run,
-            config=config,
+            config=space,
             stop=stop,
             verbose=2,
 
-            search_alg=hyperopt_search,
+            # search_alg=hyperopt_search,
 
             # if you would like to collect the stream outputs in files for later analysis or
             # troubleshooting, Tune offers an utility parameter, log_to_file, for this.
