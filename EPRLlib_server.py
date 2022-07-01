@@ -44,9 +44,9 @@ from ray.tune.logger import pretty_print
 
 
 from hyperopt import hp
-"""
+
 from ray.tune.search.hyperopt import HyperOptSearch
-"""
+
 
 # Se define la direccion del servidor. Se puede indicar un IP o bien con
 # el comando "localhost" definir el IP local, el cual lo busca automaticamente
@@ -311,6 +311,7 @@ if __name__ == "__main__":
         stop = {
             "training_iteration": args.stop_iters,
             "timesteps_total": args.stop_timesteps,
+            "mean_accuracy": 0.98,
         }
         print("Se realiza un tuneo de los parametros.")
 
