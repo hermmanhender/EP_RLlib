@@ -55,7 +55,7 @@ from ray.rllib.env.policy_client import PolicyClient
 
 @PublicAPI
 class environment():
-
+    RAY_DISABLE_MEMORY_MONITOR = 1
     global client, config
 
     @PublicAPI
@@ -63,7 +63,6 @@ class environment():
         """
         Se establece la ruta base de los datos del programa
         """
-        RAY_DISABLE_MEMORY_MONITOR = 1
         # Estas rutas deben coincidir con las del ordenador que se está utilizando
         if config['ruta'] == "A":
             config['ruta_base'] = 'C:/Users/grhen/Documents/GitHub/EP_RLlib'

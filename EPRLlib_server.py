@@ -144,7 +144,7 @@ def get_cli_args():
     )
     parser.add_argument(
         "--no-tune",
-        action="store_true",
+        action="store_false",
         help="Run without Tune using a manual train loop instead. Here,"
         "there is no TensorBoard support.",
     )
@@ -156,7 +156,7 @@ def get_cli_args():
 
     parser.add_argument(
         "--checkpoint-freq",
-        default=4800,
+        default=2400,
         help="In order to save checkpoints from which to evaluate policies",
     )
 
@@ -278,13 +278,13 @@ if __name__ == "__main__":
             print(pretty_print(results))
             checkpoint = trainer.save()
             print("Last checkpoint", checkpoint)
-            with open(checkpoint_path, "w") as f:
+            """with open(checkpoint_path, "w") as f:
                 f.write(checkpoint)
             if (
                 results["episode_reward_mean"] >= args.stop_reward
                 or ts >= args.stop_timesteps
             ):
-                break
+                break"""
             ts += results["timesteps_total"]
 
     # Run with Tune for auto env and trainer creation and TensorBoard.
@@ -348,7 +348,7 @@ if __name__ == "__main__":
             # restore=checkpoint_path,
 
             # name of your experiment
-            name="fanger_comfort",
+            name="experimento_1",
 
             # a directory where results are stored before being
             # sync'd to head node/cloud storage
