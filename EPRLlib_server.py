@@ -330,7 +330,7 @@ if __name__ == "__main__":
         # analysis = tune.run(
         #     train_mnist, config=search_space, resources_per_trial={'gpu': 1})
 
-
+        config.update({"lr": 0.01})
 
         analysis = tune.run(
             args.run,
