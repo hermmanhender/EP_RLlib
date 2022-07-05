@@ -89,13 +89,13 @@ def get_cli_args():
     parser.add_argument(
         "--num-workers",
         type=int,
-        default=4,
+        default=0,
         help="The number of workers to use. Each worker will create "
         "its own listening socket for incoming experiences.",
     )
     parser.add_argument(
         "--no-restore",
-        action="store_true",
+        action="store_false",
         help="Do not restore from a previously saved checkpoint (location of "
         "which is saved in `last_checkpoint_[algo-name].out`).",
     )
@@ -126,7 +126,7 @@ def get_cli_args():
     parser.add_argument(
         "--stop-iters",
         type=int,
-        default=300,
+        default=30000,
         help="Number of iterations to train."
     )
     parser.add_argument(
@@ -231,11 +231,19 @@ if __name__ == "__main__":
         # Example of using DQN (supports off-policy actions).
         config.update(
             {
+                # Number of rollout worker actors to create for parallel sampling. Setting
+                # this to 0 will force rollouts to be done in the algorithm's actor.
+                "num_workers": 0,
+                "recreate_failed_workers": True,
                 "replay_buffer_config": {
-                    "learning_starts":100
+                    "learning_starts":100,
+                    # Size of the replay buffer. Note that if async_updates is set,
+                    # then each worker will have a replay buffer of this size.
+                    "capacity": 50000,
                     },
-                "timesteps_per_iteration": 200,
-                "n_step": 20, # Tamaño del bache de datos
+                "timesteps_per_iteration": 100,
+                "n_step": 30, # Tamaño del bache de datos
+                "lr": 0.001,
             }
         )
         config["model"] = {
@@ -249,11 +257,12 @@ if __name__ == "__main__":
         config.update(
             {
                 "rollout_fragment_length": 1000,
-                "train_batch_size": 4000,
+                "train_batch_size": 4800,
             }
         )
 
     checkpoint_path = CHECKPOINT_FILE.format(args.run)
+    checkpoint_path = "C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-03_22-31-42zsrigtpn/checkpoint_000300"
     # Attempt to restore from checkpoint, if possible.
     if not args.no_restore and os.path.exists(checkpoint_path):
         checkpoint_path = open(checkpoint_path).read()
