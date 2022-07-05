@@ -261,13 +261,15 @@ if __name__ == "__main__":
             }
         )
 
-    checkpoint_path = CHECKPOINT_FILE.format(args.run)
-    checkpoint_path = "C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-03_22-31-42zsrigtpn/checkpoint_000300"
-    # Attempt to restore from checkpoint, if possible.
+    #checkpoint_path = CHECKPOINT_FILE.format(args.run)
+    
+    checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-04_09-22-22n1qciuas/checkpoint_003954/checkpoint-3954'
+    
+    """# Attempt to restore from checkpoint, if possible.
     if not args.no_restore and os.path.exists(checkpoint_path):
         checkpoint_path = open(checkpoint_path).read()
     else:
-        checkpoint_path = None
+        checkpoint_path = None"""
 
     # Manual training loop (no Ray tune).
     if args.no_tune:
@@ -276,9 +278,9 @@ if __name__ == "__main__":
         else:
             trainer = PPOTrainer(config=config)
 
-        if checkpoint_path:
-            print("Restoring from checkpoint path", checkpoint_path)
-            trainer.restore(checkpoint_path)
+        # if checkpoint_path:
+        print("Restoring from checkpoint path", checkpoint_path)
+        trainer.restore(checkpoint_path)
 
         # Serving and training loop.
         ts = 0
