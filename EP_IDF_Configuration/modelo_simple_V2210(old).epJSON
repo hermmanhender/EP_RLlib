@@ -742,6 +742,64 @@
             ],
             "schedule_type_limits_name": "On/Off"
         },
+        "COOLING SETPOINTS": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 7:00"
+                },
+                {
+                    "field": 0
+                },
+                {
+                    "field": "Until: 20:00"
+                },
+                {
+                    "field": 0
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 0
+                }
+            ],
+            "schedule_type_limits_name": "Temperature"
+        },
+        "HEATING SETPOINTS": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 7:00"
+                },
+                {
+                    "field": 40
+                },
+                {
+                    "field": "Until: 17:00"
+                },
+                {
+                    "field": 40
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 40
+                }
+            ],
+            "schedule_type_limits_name": "Temperature"
+        },
         "Work Efficiency": {
             "data": [
                 {
@@ -771,7 +829,7 @@
                     "field": "Until: 24:00"
                 },
                 {
-                    "field": 4
+                    "field": 2
                 },
                 {
                     "field": "Through: 9/30"
@@ -783,7 +841,7 @@
                     "field": "Until: 24:00"
                 },
                 {
-                    "field": 4
+                    "field": 1
                 },
                 {
                     "field": "Through: 12/31"
@@ -795,7 +853,7 @@
                     "field": "Until: 24:00"
                 },
                 {
-                    "field": 4
+                    "field": 2
                 }
             ],
             "schedule_type_limits_name": "Control Type"
@@ -819,27 +877,27 @@
         }
     },
     "Schedule:File": {
-        "Control_C": {
+        "Aviability_Control_C": {
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 2,
             "column_separator": "Comma",
-            "file_name": "C:\\Users\\grhen\\Documents\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\Control_C.csv",
+            "file_name": "C:\\Users\\grhen\\Documents\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\RL_Aviability_Sch_C_0.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 3,
             "number_of_hours_of_data": 8760,
             "rows_to_skip_at_top": 1,
-            "schedule_type_limits_name": "Temperature"
+            "schedule_type_limits_name": "AviabilityType"
         },
-        "Control_R": {
+        "Aviability_Control_R": {
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 2,
             "column_separator": "Comma",
-            "file_name": "C:\\Users\\grhen\\Documents\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\Control_R.csv",
+            "file_name": "C:\\Users\\grhen\\Documents\\GitHub\\EP_RLlib\\EP_IDF_Configuration\\RL_Aviability_Sch_R_0.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 3,
             "number_of_hours_of_data": 8760,
             "rows_to_skip_at_top": 1,
-            "schedule_type_limits_name": "Temperature"
+            "schedule_type_limits_name": "AviabilityType"
         },
         "Shadow_Control": {
             "adjust_schedule_for_daylight_savings": "Yes",
@@ -936,10 +994,14 @@
             "algorithm": "DOE-2"
         }
     },
-    "ThermostatSetpoint:DualSetpoint": {
-        "Dual_temp_sp": {
-            "cooling_setpoint_temperature_schedule_name": "Control_R",
-            "heating_setpoint_temperature_schedule_name": "Control_C"
+    "ThermostatSetpoint:SingleCooling": {
+        "Cooling Setpoint with SB": {
+            "setpoint_temperature_schedule_name": "COOLING SETPOINTS"
+        }
+    },
+    "ThermostatSetpoint:SingleHeating": {
+        "Heating Setpoint with SB": {
+            "setpoint_temperature_schedule_name": "HEATING SETPOINTS"
         }
     },
     "Timestep": {
@@ -1031,8 +1093,10 @@
     },
     "ZoneControl:Thermostat": {
         "Termostato": {
-            "control_1_name": "Dual_temp_sp",
-            "control_1_object_type": "ThermostatSetpoint:DualSetpoint",
+            "control_1_name": "Heating Setpoint with SB",
+            "control_1_object_type": "ThermostatSetpoint:SingleHeating",
+            "control_2_name": "Cooling Setpoint with SB",
+            "control_2_object_type": "ThermostatSetpoint:SingleCooling",
             "control_type_schedule_name": "ZONE CONTROL TYPE SCHED",
             "zone_or_zonelist_name": "Thermal Zone: Modelo_Simple"
         }
@@ -1054,14 +1118,14 @@
                     "zone_equipment_heating_or_no_load_sequence": 1,
                     "zone_equipment_name": "Refrigeracion",
                     "zone_equipment_object_type": "ZoneHVAC:IdealLoadsAirSystem",
-                    "zone_equipment_sequential_cooling_fraction_schedule_name": "Control_R"
+                    "zone_equipment_sequential_cooling_fraction_schedule_name": "COOLING SETPOINTS"
                 },
                 {
                     "zone_equipment_cooling_sequence": 2,
                     "zone_equipment_heating_or_no_load_sequence": 2,
                     "zone_equipment_name": "Calefaccion",
                     "zone_equipment_object_type": "ZoneHVAC:IdealLoadsAirSystem",
-                    "zone_equipment_sequential_heating_fraction_schedule_name": "Control_C"
+                    "zone_equipment_sequential_heating_fraction_schedule_name": "HEATING SETPOINTS"
                 }
             ],
             "load_distribution_scheme": "SequentialLoad"
@@ -1069,6 +1133,7 @@
     },
     "ZoneHVAC:IdealLoadsAirSystem": {
         "Calefaccion": {
+            "availability_schedule_name": "Aviability_Control_C",
             "cooling_limit": "LimitCapacity",
             "dehumidification_control_type": "ConstantSupplyHumidityRatio",
             "heating_limit": "LimitCapacity",
@@ -1082,6 +1147,7 @@
             "zone_supply_air_node_name": "NODE 2"
         },
         "Refrigeracion": {
+            "availability_schedule_name": "Aviability_Control_R",
             "cooling_limit": "LimitCapacity",
             "dehumidification_control_type": "ConstantSupplyHumidityRatio",
             "heating_limit": "LimitCapacity",

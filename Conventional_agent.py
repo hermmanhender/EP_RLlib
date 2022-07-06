@@ -42,6 +42,7 @@ from pyenergyplus.api import EnergyPlusAPI
 api = EnergyPlusAPI()
 
 from IDF_tool import Schedules, LocationClimate, MainFunctions
+import Conventional_controls
 import time
 import os
 import shutil
@@ -104,7 +105,7 @@ class environment():
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
         output = [('episode','rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
-        pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
+        pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
 
         config['Folder_Output'] = config['directorio']
         config['Weather_file'] = config['directorio'] + '/Resultados/Observatorio-hour_2.epw'
@@ -337,14 +338,23 @@ class environment():
                 """
                 SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                 """
-                output = [(config['episode'], rad, Bw, To, Ti, v, d, RHi, config['a_tp1'][config['t']], config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
-                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
+                a_tp1 = 0
+
+                output = [(config['episode'], rad, Bw, To, Ti, v, d, RHi, a_tp1, config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
+                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="a", index=False, header=False)
                 
 
-                """Se obtiene la acción de RLlib"""
-                #print("Se obtiene una acción del agente.")
-                a_tp1 = agent.compute_action(s_cont_tp1)
-                config['a_tp1'].append(a_tp1)
+                """Se obtiene la acción Convencional"""
+                a_tp1_R, a_tp1_C = Conventional_controls.coolandheat_OnOff(Ti, config['T_SP'], config['dT_up'], config['dT_dn'], config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']])
+                a_tp1_p = Conventional_controls.persianas_OnOff(Ti, config['T_SP'], config['dT_up'], config['dT_dn'], Bw, config['a_tp1_p'][config['t']])
+                a_tp1_vn = Conventional_controls.ventana_OnOff2(Ti, To, config['T_SP'], config['dT_up'], config['dT_dn'], RHi, config['SP_RH'], config['a_tp1_vn'][config['t']])
+                a_tp1_vs = Conventional_controls.ventana_OnOff2(Ti, To, config['T_SP'], config['dT_up'], config['dT_dn'], RHi, config['SP_RH'], config['a_tp1_vs'][config['t']])
+                config['a_tp1_R'].append(a_tp1_R)
+                config['a_tp1_C'].append(a_tp1_C)
+                config['a_tp1_p'].append(a_tp1_p)
+                config['a_tp1_vn'].append(a_tp1_vn)
+                config['a_tp1_vs'].append(a_tp1_vs)
+                
                 
                 """
                 SE REALIZAN LAS ACCIONES EN EL SIMULADOR
@@ -360,59 +370,7 @@ class environment():
                 VentN_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'VentN_Control')
                 # handle para el control de abertura de la ventana orientada al sur
                 VentS_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'VentS_Control')
-                
-                '''Se transforma la acción seleccionada a una lista de acciones'''
-                # la acción que se tomó corresponde a la del espacio de acciones que el agente tiene
-                # asignado, pero según si es un agente convencional, competidor o propuesto, ese espacio
-                # de acciones es diferente. Por esto, se implementa una desagregación de la acción en
-                # las que controlan cada componente de la vivienda según corresponda.
 
-                # El sistema propuesto controla todos los elementos del edificio, por lo que
-                # se transforma la acción seleccionada del espacio de acciones a una lista que
-                # asigna el control de cada uno de los elementos.  
-                '''
-                Esta función transforma una acción del espacio de acciones (entero) a una lista de longitud 
-                asignada que contiene el valor binario del entero. 
-                '''
-                len = 5
-                binario = []
-                # se comprueba que el entero se pueda representar como un binario de la longitud asignada
-                if a_tp1 >= 2**len:
-                    print("Error: decimal out of range.")
-                # se comprueba que el entero sea positivo
-                elif a_tp1 < 0:
-                    print("Error: decimal out of range.")
-                # si el entero es 0, entonces el binario es una lista de la longitud especificada llena de ceros.
-                elif a_tp1 == 0: 
-                    i=0
-                    while i <= len-1:
-                        binario.append(0)
-                        i+=1
-                else:
-                    i=0
-                    while i <= len-1: # mientras el número de entrada sea diferente de cero
-                        # paso 1: dividimos entre 2
-                        modulo = a_tp1 % 2
-                        cociente = a_tp1 // 2
-                        binario.insert(0, modulo) # guardamos el módulo calculado
-                        a_tp1 = cociente # el cociente pasa a ser el número de entrada
-                        i += 1
-
-
-                a_tp1_lista = binario
-
-                a_tp1_R = a_tp1_lista[0]
-                a_tp1_C = a_tp1_lista[1]
-                a_tp1_p = a_tp1_lista[2]
-                a_tp1_vn = a_tp1_lista[3]
-                a_tp1_vs = a_tp1_lista[4]
-
-                config['a_tp1_R'].append(a_tp1_R)
-                config['a_tp1_C'].append(a_tp1_C)
-                config['a_tp1_p'].append(a_tp1_p)
-                config['a_tp1_vn'].append(a_tp1_vn)
-                config['a_tp1_vs'].append(a_tp1_vs)
-                
                 
                 '''Se ejecutan las acciones en el paso de tiempo actual'''
                 # Aquí se está enviando información al simulador, asignando las acciones en cada uno
@@ -443,7 +401,7 @@ config = {'Folder_Output': '',
         'dT_up': 1.,
         'dT_dn': 4.,
         'SP_RH': 70.,
-        'nombre_caso': "dqn_model_test", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'nombre_caso': "rb_model_test", # Se utiliza para identificar la carpeta donde se guardan los datos
         'rho': 10, # Temperatura: default: 0.25
         'beta': 1, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
@@ -451,7 +409,6 @@ config = {'Folder_Output': '',
         'directorio': '',
         'ruta_base': 'C:/Users/grhen/Documents/GitHub/EP_RLlib',
         'ruta': 'A', # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
-        'a_tp1': [0],
         'a_tp1_R': [0],
         'a_tp1_C': [0],
         'a_tp1_p': [0],
@@ -461,47 +418,7 @@ config = {'Folder_Output': '',
         }
 
 if __name__ == "__main__":
-    from gym import spaces
-    from ray.rllib.agents.dqn import DQNTrainer
-    algo_config = {
-        # Indicate that the Trainer we setup here doesn't need an actual env.
-        # Allow spaces to be determined by user (see below).
-        "env": None,
-        # TODO: (sven) make these settings unnecessary and get the information
-        #  about the env spaces from the client.
-        "observation_space": spaces.Box(float("-inf"), float("inf"), (7,)),
-        "action_space": spaces.Discrete(32), # son 5 accionables binarios y su combinatoria es 2^5
-        # Use n worker processes to listen on different ports.
-        "num_workers": 0,
-        # DL framework to use.
-        "framework": "tf",
-        "recreate_failed_workers": True,
-                "replay_buffer_config": {
-                    "learning_starts":100,
-                    # Size of the replay buffer. Note that if async_updates is set,
-                    # then each worker will have a replay buffer of this size.
-                    "capacity": 50000,
-                    },
-                "timesteps_per_iteration": 100,
-                "n_step": 30, # Tamaño del bache de datos
-                "lr": 0.001,
-        }
-    algo_config["model"] = {
-            "fcnet_hiddens": [64],
-            "fcnet_activation": "linear",
-        }
-
-    algo_config.update(
-            {
-                "rollout_fragment_length": 1000,
-                "train_batch_size": 4800,
-            }
-        )
-
-    environment()
     
-    agent = DQNTrainer(config=algo_config)
-
-    agent.restore(checkpoint_path='C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-04_09-22-22n1qciuas/checkpoint_003954/checkpoint-3954')
-
+    environment()
     environment.run(environment)
+    print("Se finalizó la corrida para el RBCS convencional.")

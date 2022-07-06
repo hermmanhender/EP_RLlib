@@ -4,6 +4,12 @@
 !-NOTE: All comments with '!-' are ignored by the IDFEditor and are generated automatically.
 !-      Use '!' comments if they need to be retained when using the IDFEditor.
 
+
+ThermostatSetpoint:DualSetpoint,
+    Dual_temp_sp,            !- Name
+    Control_C,               !- Heating Setpoint Temperature Schedule Name
+    Control_R;               !- Cooling Setpoint Temperature Schedule Name
+
 Schedule:Compact,
     number_people,           !- Name
     Fraction,                !- Schedule Type Limits Name
@@ -71,7 +77,7 @@ Output:Meter,Heating:DistrictHeating,Timestep;
 
 ZoneHVAC:IdealLoadsAirSystem,
     Calefaccion,             !- Name
-    Aviability_Control_C,    !- Availability Schedule Name
+    ,                        !- Availability Schedule Name
     NODE 2,                  !- Zone Supply Air Node Name
     ,                        !- Zone Exhaust Air Node Name
     ,                        !- System Inlet Air Node Name
@@ -99,9 +105,9 @@ ZoneHVAC:IdealLoadsAirSystem,
     ;                        !- Latent Heat Recovery Effectiveness {dimensionless}
 
 Schedule:File,
-    Aviability_Control_C,    !- Name
-    AviabilityType,          !- Schedule Type Limits Name
-    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Aviability_Sch_C_0.csv,  !- File Name
+    Control_C,               !- Name
+    Temperature,             !- Schedule Type Limits Name
+    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\Control_C.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
@@ -413,9 +419,9 @@ ScheduleTypeLimits,
 Output:Meter,Cooling:DistrictCooling,Timestep;
 
 Schedule:File,
-    Aviability_Control_R,    !- Name
-    AviabilityType,          !- Schedule Type Limits Name
-    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\RL_Aviability_Sch_R_0.csv,  !- File Name
+    Control_R,               !- Name
+    Temperature,             !- Schedule Type Limits Name
+    C:\Users\grhen\Documents\GitHub\EP_RLlib\EP_IDF_Configuration\Control_R.csv,  !- File Name
     2,                       !- Column Number
     1,                       !- Rows to Skip at Top
     8760,                    !- Number of Hours of Data
@@ -450,14 +456,14 @@ ZoneHVAC:EquipmentList,
     Refrigeracion,           !- Zone Equipment 1 Name
     1,                       !- Zone Equipment 1 Cooling Sequence
     1,                       !- Zone Equipment 1 Heating or No-Load Sequence
-    COOLING SETPOINTS,       !- Zone Equipment 1 Sequential Cooling Fraction Schedule Name
+    Control_R,               !- Zone Equipment 1 Sequential Cooling Fraction Schedule Name
     ,                        !- Zone Equipment 1 Sequential Heating Fraction Schedule Name
     ZoneHVAC:IdealLoadsAirSystem,  !- Zone Equipment 2 Object Type
     Calefaccion,             !- Zone Equipment 2 Name
     2,                       !- Zone Equipment 2 Cooling Sequence
     2,                       !- Zone Equipment 2 Heating or No-Load Sequence
     ,                        !- Zone Equipment 2 Sequential Cooling Fraction Schedule Name
-    HEATING SETPOINTS;       !- Zone Equipment 2 Sequential Heating Fraction Schedule Name
+    Control_C;               !- Zone Equipment 2 Sequential Heating Fraction Schedule Name
 
 ZoneHVAC:EquipmentConnections,
     Thermal Zone: Modelo_Simple,  !- Zone Name
@@ -497,7 +503,7 @@ Output:Variable,*,Site Outdoor Air Drybulb Temperature,Timestep;
 
 ZoneHVAC:IdealLoadsAirSystem,
     Refrigeracion,           !- Name
-    Aviability_Control_R,    !- Availability Schedule Name
+    ,                        !- Availability Schedule Name
     NODE 1,                  !- Zone Supply Air Node Name
     ,                        !- Zone Exhaust Air Node Name
     ,                        !- System Inlet Air Node Name
@@ -528,10 +534,8 @@ ZoneControl:Thermostat,
     Termostato,              !- Name
     Thermal Zone: Modelo_Simple,  !- Zone or ZoneList Name
     ZONE CONTROL TYPE SCHED, !- Control Type Schedule Name
-    ThermostatSetpoint:SingleHeating,  !- Control 1 Object Type
-    Heating Setpoint with SB,!- Control 1 Name
-    ThermostatSetpoint:SingleCooling,  !- Control 2 Object Type
-    Cooling Setpoint with SB;!- Control 2 Name
+    ThermostatSetpoint:DualSetpoint,  !- Control 1 Object Type
+    Dual_temp_sp;            !- Control 1 Name
 
 ScheduleTypeLimits,
     Control Type,            !- Name
@@ -548,43 +552,17 @@ ScheduleTypeLimits,
     Any Number;              !- Name
 
 Schedule:Compact,
-    HEATING SETPOINTS,       !- Name
-    Temperature,             !- Schedule Type Limits Name
-    Through: 12/31,          !- Field 1
-    For: Alldays,            !- Field 2
-    Until: 7:00, 40,         !- Field 4
-    Until: 17:00, 40,        !- Field 6
-    Until: 24:00, 40;        !- Field 8
-
-Schedule:Compact,
-    COOLING SETPOINTS,       !- Name
-    Temperature,             !- Schedule Type Limits Name
-    Through: 12/31,          !- Field 1
-    For: Alldays,            !- Field 2
-    Until: 7:00, 0,          !- Field 4
-    Until: 20:00, 0,         !- Field 6
-    Until: 24:00, 0;         !- Field 8
-
-Schedule:Compact,
     ZONE CONTROL TYPE SCHED, !- Name
     Control Type,            !- Schedule Type Limits Name
     Through: 3/31,           !- Field 1
     For: Alldays,            !- Field 2
-    Until: 24:00, 2,         !- Field 4
+    Until: 24:00, 4,         !- Field 4
     Through: 9/30,           !- Field 5
     For: Alldays,            !- Field 6
-    Until: 24:00, 1,         !- Field 8
+    Until: 24:00, 4,         !- Field 8
     Through: 12/31,          !- Field 9
     For: Alldays,            !- Field 10
-    Until: 24:00, 2;         !- Field 12
-
-ThermostatSetpoint:SingleHeating,
-    Heating Setpoint with SB,!- Name
-    HEATING SETPOINTS;       !- Setpoint Temperature Schedule Name
-
-ThermostatSetpoint:SingleCooling,
-    Cooling Setpoint with SB,!- Name
-    COOLING SETPOINTS;       !- Setpoint Temperature Schedule Name
+    Until: 24:00, 4;         !- Field 12
 
 ScheduleTypeLimits,
     On/Off,                  !- Name

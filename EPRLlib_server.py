@@ -211,7 +211,7 @@ if __name__ == "__main__":
         # TODO: (sven) make these settings unnecessary and get the information
         #  about the env spaces from the client.
         "observation_space": spaces.Box(float("-inf"), float("inf"), (7,)),
-        "action_space": spaces.Discrete(32), # son 5 accionables binarios y su combinatoria es 2^5
+        "action_space": spaces.Discrete(528), # son 5 accionables binarios y su combinatoria es 2^5
         # Use the `PolicyServerInput` to generate experiences.
         "input": _input,
         # Use n worker processes to listen on different ports.
@@ -263,7 +263,7 @@ if __name__ == "__main__":
 
     #checkpoint_path = CHECKPOINT_FILE.format(args.run)
     
-    checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-04_09-22-22n1qciuas/checkpoint_003954/checkpoint-3954'
+    
     
     """# Attempt to restore from checkpoint, if possible.
     if not args.no_restore and os.path.exists(checkpoint_path):
@@ -278,10 +278,11 @@ if __name__ == "__main__":
         else:
             trainer = PPOTrainer(config=config)
 
-        # if checkpoint_path:
+        """# if checkpoint_path:
+        checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-04_09-22-22n1qciuas/checkpoint_003954/checkpoint-3954'
         print("Restoring from checkpoint path", checkpoint_path)
         trainer.restore(checkpoint_path)
-
+        """
         # Serving and training loop.
         ts = 0
         for _ in range(args.stop_iters):
