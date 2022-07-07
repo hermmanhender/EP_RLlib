@@ -98,8 +98,8 @@ class environment():
         shutil.copy(config['ruta_base'] + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', config['directorio'] + '/Resultados/Observatorio-hour_2.epw')
 
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_C_0.csv', config['directorio'] + '/Resultados/RL_Aviability_Sch_C_0.csv')
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_R_0.csv', config['directorio'] + '/Resultados/RL_Aviability_Sch_R_0.csv')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/Control_C.csv', config['directorio'] + '/Resultados/Control_C.csv')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/Control_R.csv', config['directorio'] + '/Resultados/Control_R.csv')
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
 
@@ -176,8 +176,8 @@ class environment():
         LocationClimate.RunPeriod.begin_month(epJSON_file_old, "DDMM", init_month)
         LocationClimate.RunPeriod.end_day_of_month(epJSON_file_old, "DDMM", final_day)
         LocationClimate.RunPeriod.end_month(epJSON_file_old, "DDMM", final_month)
-        Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_R", config['directorio'] + '/Resultados/RL_Aviability_Sch_R_0.csv')
-        Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_C", config['directorio'] + '/Resultados/RL_Aviability_Sch_C_0.csv')
+        Schedules.Schedule_File.file_name(epJSON_file_old, "Control_R", config['directorio'] + '/Resultados/Control_R.csv')
+        Schedules.Schedule_File.file_name(epJSON_file_old, "Control_C", config['directorio'] + '/Resultados/Control_C.csv')
         Schedules.Schedule_File.file_name(epJSON_file_old, "Shadow_Control", config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
         Schedules.Schedule_File.file_name(epJSON_file_old, "VentN_Control", config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
         Schedules.Schedule_File.file_name(epJSON_file_old, "VentS_Control", config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
@@ -345,7 +345,8 @@ class environment():
                 
 
                 """Se obtiene la acción Convencional"""
-                a_tp1_R, a_tp1_C = Conventional_controls.coolandheat_OnOff(Ti, config['T_SP'], config['dT_up'], config['dT_dn'], config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']])
+                a_tp1_R = 25
+                a_tp1_C = 20
                 a_tp1_p = Conventional_controls.persianas_OnOff(Ti, config['T_SP'], config['dT_up'], config['dT_dn'], Bw, config['a_tp1_p'][config['t']])
                 a_tp1_vn = Conventional_controls.ventana_OnOff2(Ti, To, config['T_SP'], config['dT_up'], config['dT_dn'], RHi, config['SP_RH'], config['a_tp1_vn'][config['t']])
                 a_tp1_vs = Conventional_controls.ventana_OnOff2(Ti, To, config['T_SP'], config['dT_up'], config['dT_dn'], RHi, config['SP_RH'], config['a_tp1_vs'][config['t']])
@@ -363,9 +364,9 @@ class environment():
                 # handle para el control de la persiana
                 ShadingControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Shadow_Control')
                 # handle para el control del refrigerador
-                R_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Aviability_Control_R')
+                R_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Control_R')
                 # handle para el control del calefactor
-                C_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Aviability_Control_C')
+                C_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Control_C')
                 # handle para el control de abertura de la ventana orientada al norte
                 VentN_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'VentN_Control')
                 # handle para el control de abertura de la ventana orientada al sur
@@ -409,6 +410,7 @@ config = {'Folder_Output': '',
         'directorio': '',
         'ruta_base': 'C:/Users/grhen/Documents/GitHub/EP_RLlib',
         'ruta': 'A', # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
+        'a_tp1': [0],
         'a_tp1_R': [0],
         'a_tp1_C': [0],
         'a_tp1_p': [0],

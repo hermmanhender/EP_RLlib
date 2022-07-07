@@ -93,22 +93,27 @@ class environment():
         else:
             print("Se ha creado el directorio: %s " % config['directorio'])
 
+        # Para versión 2210
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_V2210.epJSON', config['directorio'] + '/Resultados/modelo_simple.epJSON')
         shutil.copy(config['ruta_base'] + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', config['directorio'] + '/Resultados/Observatorio-hour_2.epw')
 
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_C_0.csv', config['directorio'] + '/Resultados/RL_Aviability_Sch_C_0.csv')
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Aviability_Sch_R_0.csv', config['directorio'] + '/Resultados/RL_Aviability_Sch_R_0.csv')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/Control_C.csv', config['directorio'] + '/Resultados/Control_C.csv')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/Control_R.csv', config['directorio'] + '/Resultados/Control_R.csv')
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
 
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/action_space.csv', config['directorio'] + '/Resultados/action_space.csv')
+
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
         output = [('episode','rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
-        pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
+        pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
 
         config['Folder_Output'] = config['directorio']
         config['Weather_file'] = config['directorio'] + '/Resultados/Observatorio-hour_2.epw'
         config['epJSON_file'] = config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON'
+
+        config.update({'action_space': pd.read_csv(config['directorio'] + '/Resultados/action_space.csv')})
 
     @PublicAPI
     def run(self):
@@ -175,8 +180,8 @@ class environment():
         LocationClimate.RunPeriod.begin_month(epJSON_file_old, "DDMM", init_month)
         LocationClimate.RunPeriod.end_day_of_month(epJSON_file_old, "DDMM", final_day)
         LocationClimate.RunPeriod.end_month(epJSON_file_old, "DDMM", final_month)
-        Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_R", config['directorio'] + '/Resultados/RL_Aviability_Sch_R_0.csv')
-        Schedules.Schedule_File.file_name(epJSON_file_old, "Aviability_Control_C", config['directorio'] + '/Resultados/RL_Aviability_Sch_C_0.csv')
+        Schedules.Schedule_File.file_name(epJSON_file_old, "Control_R", config['directorio'] + '/Resultados/Control_R.csv')
+        Schedules.Schedule_File.file_name(epJSON_file_old, "Control_C", config['directorio'] + '/Resultados/Control_C.csv')
         Schedules.Schedule_File.file_name(epJSON_file_old, "Shadow_Control", config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
         Schedules.Schedule_File.file_name(epJSON_file_old, "VentN_Control", config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
         Schedules.Schedule_File.file_name(epJSON_file_old, "VentS_Control", config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
@@ -337,13 +342,15 @@ class environment():
                 """
                 SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                 """
+                #a_tp1 = 0
+
                 output = [(config['episode'], rad, Bw, To, Ti, v, d, RHi, config['a_tp1'][config['t']], config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
-                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
+                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="a", index=False, header=False)
                 
 
                 """Se obtiene la acción de RLlib"""
                 #print("Se obtiene una acción del agente.")
-                a_tp1 = agent.compute_action(s_cont_tp1)
+                a_tp1 = agent.compute_single_action(s_cont_tp1)
                 config['a_tp1'].append(a_tp1)
                 
                 """
@@ -353,66 +360,28 @@ class environment():
                 # handle para el control de la persiana
                 ShadingControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Shadow_Control')
                 # handle para el control del refrigerador
-                R_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Aviability_Control_R')
+                R_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Control_R')
                 # handle para el control del calefactor
-                C_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Aviability_Control_C')
+                C_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'Control_C')
                 # handle para el control de abertura de la ventana orientada al norte
                 VentN_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'VentN_Control')
                 # handle para el control de abertura de la ventana orientada al sur
                 VentS_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'VentS_Control')
                 
                 '''Se transforma la acción seleccionada a una lista de acciones'''
-                # la acción que se tomó corresponde a la del espacio de acciones que el agente tiene
-                # asignado, pero según si es un agente convencional, competidor o propuesto, ese espacio
-                # de acciones es diferente. Por esto, se implementa una desagregación de la acción en
-                # las que controlan cada componente de la vivienda según corresponda.
+                
 
-                # El sistema propuesto controla todos los elementos del edificio, por lo que
-                # se transforma la acción seleccionada del espacio de acciones a una lista que
-                # asigna el control de cada uno de los elementos.  
-                '''
-                Esta función transforma una acción del espacio de acciones (entero) a una lista de longitud 
-                asignada que contiene el valor binario del entero. 
-                '''
-                len = 5
-                binario = []
-                # se comprueba que el entero se pueda representar como un binario de la longitud asignada
-                if a_tp1 >= 2**len:
-                    print("Error: decimal out of range.")
-                # se comprueba que el entero sea positivo
-                elif a_tp1 < 0:
-                    print("Error: decimal out of range.")
-                # si el entero es 0, entonces el binario es una lista de la longitud especificada llena de ceros.
-                elif a_tp1 == 0: 
-                    i=0
-                    while i <= len-1:
-                        binario.append(0)
-                        i+=1
-                else:
-                    i=0
-                    while i <= len-1: # mientras el número de entrada sea diferente de cero
-                        # paso 1: dividimos entre 2
-                        modulo = a_tp1 % 2
-                        cociente = a_tp1 // 2
-                        binario.insert(0, modulo) # guardamos el módulo calculado
-                        a_tp1 = cociente # el cociente pasa a ser el número de entrada
-                        i += 1
-
-
-                a_tp1_lista = binario
-
-                a_tp1_R = a_tp1_lista[0]
-                a_tp1_C = a_tp1_lista[1]
-                a_tp1_p = a_tp1_lista[2]
-                a_tp1_vn = a_tp1_lista[3]
-                a_tp1_vs = a_tp1_lista[4]
-
+                a_tp1_R = config['action_space']['Cooling SP'][a_tp1]
+                a_tp1_C = config['action_space']['Heating SP'][a_tp1]
+                a_tp1_p = config['action_space']['North Blind'][a_tp1]
+                a_tp1_vn = config['action_space']['North Window'][a_tp1]
+                a_tp1_vs = config['action_space']['South Window'][a_tp1]
                 config['a_tp1_R'].append(a_tp1_R)
                 config['a_tp1_C'].append(a_tp1_C)
                 config['a_tp1_p'].append(a_tp1_p)
                 config['a_tp1_vn'].append(a_tp1_vn)
                 config['a_tp1_vs'].append(a_tp1_vs)
-                
+
                 
                 '''Se ejecutan las acciones en el paso de tiempo actual'''
                 # Aquí se está enviando información al simulador, asignando las acciones en cada uno
@@ -425,13 +394,10 @@ class environment():
                 api.exchange.set_actuator_value(state, VentS_ControlHandle, a_tp1_vs)
 
                 config['t'] += 1
-
                 if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
-                    config['episode'] = config['episode'] + 1
                     config['t'] = 0
-
-
-                
+                    config['episode'] = config['episode'] + 1
+                    
 
 
 config = {'Folder_Output': '',
@@ -443,7 +409,7 @@ config = {'Folder_Output': '',
         'dT_up': 1.,
         'dT_dn': 4.,
         'SP_RH': 70.,
-        'nombre_caso': "dqn_model_test", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'nombre_caso': "dqn_trained", # Se utiliza para identificar la carpeta donde se guardan los datos
         'rho': 10, # Temperatura: default: 0.25
         'beta': 1, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
@@ -470,7 +436,7 @@ if __name__ == "__main__":
         # TODO: (sven) make these settings unnecessary and get the information
         #  about the env spaces from the client.
         "observation_space": spaces.Box(float("-inf"), float("inf"), (7,)),
-        "action_space": spaces.Discrete(32), # son 5 accionables binarios y su combinatoria es 2^5
+        "action_space": spaces.Discrete(528), # son 5 accionables binarios y su combinatoria es 2^5
         # Use n worker processes to listen on different ports.
         "num_workers": 0,
         # DL framework to use.
@@ -501,7 +467,10 @@ if __name__ == "__main__":
     environment()
     
     agent = DQNTrainer(config=algo_config)
+    
+    checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-06_18-54-51i2asslw0/checkpoint_000977/checkpoint-977'
 
-    agent.restore(checkpoint_path='C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-04_09-22-22n1qciuas/checkpoint_003954/checkpoint-3954')
+    agent.restore(checkpoint_path)
 
     environment.run(environment)
+    print("Se finalizó la corrida para el DQNCS propuesto.")

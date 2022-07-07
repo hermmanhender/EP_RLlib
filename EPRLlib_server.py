@@ -278,11 +278,11 @@ if __name__ == "__main__":
         else:
             trainer = PPOTrainer(config=config)
 
-        """# if checkpoint_path:
-        checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-04_09-22-22n1qciuas/checkpoint_003954/checkpoint-3954'
+        # if checkpoint_path:
+        checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-06_18-54-51i2asslw0/checkpoint_001054/checkpoint-1054'
         print("Restoring from checkpoint path", checkpoint_path)
         trainer.restore(checkpoint_path)
-        """
+        
         # Serving and training loop.
         ts = 0
         for _ in range(args.stop_iters):

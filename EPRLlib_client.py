@@ -349,6 +349,12 @@ class environment():
                     print("Se envían las recompensas para su registro en el aprendizaje.")
                     client.log_returns(str(config['episode']), r_tp1, {})"""
 
+                """
+                SE GRABAN LAS VARIABLES PARA EL TIEMPO t
+                """
+                output = [(config['episode'], rad, Bw, To, Ti, v, d, RHi, config['a_tp1'], config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
+                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="a", index=False, header=False)
+                
 
                 if config['first_time_step'] == True:
                     config['first_time_step'] = False
@@ -356,6 +362,7 @@ class environment():
                 """Se obtiene la acción de RLlib"""
                 #print("Se obtiene una acción del agente.")
                 a_tp1 = client.get_action(str(config['episode']), s_cont_tp1)
+                config['a_tp1'].append(a_tp1)
                 
                 """
                 SE REALIZAN LAS ACCIONES EN EL SIMULADOR
@@ -380,15 +387,13 @@ class environment():
                 a_tp1_p = config['action_space']['North Blind'][a_tp1]
                 a_tp1_vn = config['action_space']['North Window'][a_tp1]
                 a_tp1_vs = config['action_space']['South Window'][a_tp1]
+                config['a_tp1_R'].append(a_tp1_R)
+                config['a_tp1_C'].append(a_tp1_C)
+                config['a_tp1_p'].append(a_tp1_p)
+                config['a_tp1_vn'].append(a_tp1_vn)
+                config['a_tp1_vs'].append(a_tp1_vs)
 
-                """
-                SE GRABAN LAS VARIABLES PARA EL TIEMPO t
-                """
-                output = [(rad, Bw, To, Ti, v, d, RHi, a_tp1, a_tp1_R, a_tp1_C, a_tp1_p, a_tp1_vn, a_tp1_vs, r_tp1, e_tp1, c_tp1)]
-                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
-                """weights = client.GET_WEIGHTS
-                pd.DataFrame(weights).to_csv(config['directorio'] + '/Resultados/weights.csv', mode="a", index=False, header=False)
-"""
+                
                 '''Se ejecutan las acciones en el paso de tiempo actual'''
                 # Aquí se está enviando información al simulador, asignando las acciones en cada uno
                 # de los elementos accionables (en este caso se realiza a través de un calendario de
@@ -505,12 +510,13 @@ class environment():
                 
                 r_tp1 = r_energia + r_temp + r_hr
                 
-
+                
                 #print("Se envían las recompensas para su registro en el aprendizaje.")
                 client.log_returns(str(config['episode']), r_tp1, {})
-
+                config['t'] += 1
                 if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
                     print("Se finaliza el episodio.")
+                    config['t'] = 0
                     client.end_episode(str(config['episode']), config['last_observation'])
                     config['episode'] = config['episode'] + 1
                     output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
@@ -564,7 +570,14 @@ config = {'Folder_Output': '',
         'first_time_step': True,
         'directorio': '',
         'ruta_base': 'C:/Users/grhen/Documents/GitHub/EP_RLlib',
-        'ruta': 'A' # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
+        'ruta': 'A', # A-Notebook Lenovo, B-Notebook Asus, C-Computadora grupo
+        'a_tp1': [0],
+        'a_tp1_R': [0],
+        'a_tp1_C': [0],
+        'a_tp1_p': [0],
+        'a_tp1_vn': [0],
+        'a_tp1_vs': [0],
+        't': 0
         }
 
 if __name__ == "__main__":
