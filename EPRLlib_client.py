@@ -352,8 +352,9 @@ class environment():
                 """
                 SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                 """
-                output = [(config['episode'], rad, Bw, To, Ti, v, d, RHi, config['a_tp1'], config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
-                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="a", index=False, header=False)
+                if config['first_time_step'] == False:
+                    output = [(config['episode'], rad, Bw, To, Ti, v, d, RHi, config['a_tp1'][config['t']], config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
+                    #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="a", index=False, header=False)
                 
 
                 if config['first_time_step'] == True:
@@ -516,11 +517,11 @@ class environment():
                 config['t'] += 1
                 if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
                     print("Se finaliza el episodio.")
-                    config['t'] = 0
                     client.end_episode(str(config['episode']), config['last_observation'])
                     config['episode'] = config['episode'] + 1
+                    config['first_time_step'] = True
                     output = [("episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end", "episode_end")]
-                    pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
+                    #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="a", index=False, header=False)
 
 
 parser = argparse.ArgumentParser()
@@ -559,12 +560,12 @@ config = {'Folder_Output': '',
         'epJSON_file': '',
         'episode': 1,
         'last_observation': [],
-        'T_SP': 24.,
-        'dT_up': 1.,
-        'dT_dn': 4.,
+        'T_SP': 22.5,
+        'dT_up': 2.5,
+        'dT_dn': 2.5,
         'SP_RH': 70.,
-        'nombre_caso': "rho-5", # Se utiliza para identificar la carpeta donde se guardan los datos
-        'rho': 5, # Temperatura: default: 0.25
+        'nombre_caso': "rho-025_simetricSP", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'rho': 0.25, # Temperatura: default: 0.25
         'beta': 1, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
         'first_time_step': True,
@@ -591,7 +592,7 @@ if __name__ == "__main__":
     environment()
 
     n = 0
-    while n < 1000:
+    while n < 102:
         print("\nEpisode "+ str(n+1))
         environment.run(environment)
         n += 1

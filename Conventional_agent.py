@@ -326,23 +326,17 @@ class environment():
                 
                 r_tp1 = r_energia + r_temp + r_hr
                 
-
-                """if config['first_time_step'] == False:
-                    print("Se envían las recompensas para su registro en el aprendizaje.")
-                    client.log_returns(str(config['episode']), r_tp1, {})"""
-
-
-                if config['first_time_step'] == True:
-                    config['first_time_step'] = False
-
                 """
                 SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                 """
                 a_tp1 = 0
 
-                output = [(config['episode'], rad, Bw, To, Ti, v, d, RHi, a_tp1, config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
-                pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="a", index=False, header=False)
+                if config['first_time_step'] == False:
+                    output = [(config['episode'], rad, Bw, To, Ti, v, d, RHi, a_tp1, config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
+                    pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="a", index=False, header=False)
                 
+                if config['first_time_step'] == True:
+                    config['first_time_step'] = False
 
                 """Se obtiene la acción Convencional"""
                 a_tp1_R = 25
@@ -387,7 +381,7 @@ class environment():
 
                 if time_step + (hour * num_time_steps_in_hour) >= num_time_steps_in_hour*24:
                     config['episode'] = config['episode'] + 1
-                    config['t'] = 0
+                    config['first_time_step'] = True
 
 
                 
@@ -398,11 +392,11 @@ config = {'Folder_Output': '',
         'epJSON_file': '',
         'episode': 1,
         'last_observation': [],
-        'T_SP': 24.,
-        'dT_up': 1.,
-        'dT_dn': 4.,
+        'T_SP': 22.5,
+        'dT_up': 2.5,
+        'dT_dn': 2.5,
         'SP_RH': 70.,
-        'nombre_caso': "rb_model_test", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'nombre_caso': "rb-10_model_test", # Se utiliza para identificar la carpeta donde se guardan los datos
         'rho': 10, # Temperatura: default: 0.25
         'beta': 1, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
