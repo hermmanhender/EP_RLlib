@@ -399,8 +399,8 @@ config = {'Folder_Output': '',
         'dT_up': 2.5,
         'dT_dn': 2.5,
         'SP_RH': 70.,
-        'nombre_caso': "dqn-r10_trained-cp1847", # Se utiliza para identificar la carpeta donde se guardan los datos
-        'rho': 10, # Temperatura: default: 0.25
+        'nombre_caso': "dqn-r005_trained-cp2681", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'rho': 0.05, # Temperatura: default: 0.25
         'beta': 1, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
         'first_time_step': True,
@@ -458,7 +458,7 @@ if __name__ == "__main__":
     
     agent = DQNTrainer(config=algo_config)
     
-    checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-08_17-22-56sj8w1800/checkpoint_001847/checkpoint-1847'
+    checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-11_12-31-58wf5uaajq/checkpoint_002681/checkpoint-2681'
 
     agent.restore(checkpoint_path)
 

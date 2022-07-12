@@ -396,8 +396,8 @@ config = {'Folder_Output': '',
         'dT_up': 2.5,
         'dT_dn': 2.5,
         'SP_RH': 70.,
-        'nombre_caso': "rb-10_model_test", # Se utiliza para identificar la carpeta donde se guardan los datos
-        'rho': 10, # Temperatura: default: 0.25
+        'nombre_caso': "rb-005_model_test", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'rho': 0.05, # Temperatura: default: 0.25
         'beta': 1, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
         'first_time_step': True,
