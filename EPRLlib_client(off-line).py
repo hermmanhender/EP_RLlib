@@ -138,7 +138,7 @@ class environment():
         day = 1
         final_month = 1
         final_day = 7"""
-        for month in range(6,13,1):
+        for month in range(11,13,1):
             for day in range(1,21,1):
                 # se establece un estado en el simulador (indispensable)
                 state = api.state_manager.new_state()

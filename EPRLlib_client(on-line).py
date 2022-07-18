@@ -105,7 +105,7 @@ class environment():
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
 
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/action_space.csv', config['directorio'] + '/Resultados/action_space.csv')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/action_space_red.csv', config['directorio'] + '/Resultados/action_space_red.csv')
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
         #output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]

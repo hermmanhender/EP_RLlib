@@ -103,7 +103,7 @@ class environment():
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
 
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/action_space.csv', config['directorio'] + '/Resultados/action_space.csv')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/action_space_red.csv', config['directorio'] + '/Resultados/action_space_red.csv')
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
         output = [('episode','rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
@@ -113,7 +113,7 @@ class environment():
         config['Weather_file'] = config['directorio'] + '/Resultados/Observatorio-hour_2.epw'
         config['epJSON_file'] = config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON'
 
-        config.update({'action_space': pd.read_csv(config['directorio'] + '/Resultados/action_space.csv')})
+        config.update({'action_space': pd.read_csv(config['directorio'] + '/Resultados/action_space_red.csv')})
 
     @PublicAPI
     def run(self):
@@ -122,31 +122,33 @@ class environment():
         forma local y asigna el momento en el que se hace el intercambio con la función de intercambio
         de información EP_exchange_function.
         """
-        # se establece un estado en el simulador (indispensable)
-        state = api.state_manager.new_state()
-        # se hace un reset del estado en el simulador para borrar cualquier archivo que pueda haber 
-        # quedado en la memoria despues de una ejecución previa (recomendado)
-        api.state_manager.reset_state(state)
-        # se establece el punto de llamado para el intercambio de información con el simulador
-        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, self.EP_exchange_function)
-        
-        api.runtime.set_console_output_status(state, False)
+        for month in range(1,13,1):
+            for day in range(21,29,1):
+                # se establece un estado en el simulador (indispensable)
+                state = api.state_manager.new_state()
+                # se hace un reset del estado en el simulador para borrar cualquier archivo que pueda haber 
+                # quedado en la memoria despues de una ejecución previa (recomendado)
+                api.state_manager.reset_state(state)
+                # se establece el punto de llamado para el intercambio de información con el simulador
+                api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, self.EP_exchange_function)
+                
+                api.runtime.set_console_output_status(state, False)
 
-        # Se establece un dia random como periodo de duracion del episodio
-        # month, day = self.random_run_date(self)
-        # Si se quiere definir un periodo determinado, utilizar la siguiente parte del codigo
-        month = 1
-        day = 1
-        final_month = 12
-        final_day = 31
-        config['epJSON_file'] = self.episode_epJSON(self, month, day, final_month, final_day)
-        # se corre el simulador
-        try:
-            api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
-        except:
-            api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
-        # se elimina el estado para evitar posibles errores en la memoria (opcional)(con la versión EP 960
-        # esto arroja error)
+                # Se establece un dia random como periodo de duracion del episodio
+                # month, day = self.random_run_date(self)
+                # Si se quiere definir un periodo determinado, utilizar la siguiente parte del codigo
+                """month = 1
+                day = 1
+                final_month = 12
+                final_day = 31"""
+                config['epJSON_file'] = self.episode_epJSON(self, month, day)
+                # se corre el simulador
+                try:
+                    api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
+                except:
+                    api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
+                # se elimina el estado para evitar posibles errores en la memoria (opcional)(con la versión EP 960
+                # esto arroja error)
         
 
     @PublicAPI
@@ -370,8 +372,8 @@ class environment():
                 '''Se transforma la acción seleccionada a una lista de acciones'''
                 
 
-                a_tp1_R = config['action_space']['Cooling SP'][a_tp1]
-                a_tp1_C = config['action_space']['Heating SP'][a_tp1]
+                a_tp1_R = 25
+                a_tp1_C = 20
                 a_tp1_p = config['action_space']['North Blind'][a_tp1]
                 a_tp1_vn = config['action_space']['North Window'][a_tp1]
                 a_tp1_vs = config['action_space']['South Window'][a_tp1]
@@ -408,7 +410,7 @@ config = {'Folder_Output': '',
         'dT_up': 2.5,
         'dT_dn': 2.5,
         'SP_RH': 70.,
-        'nombre_caso': "dqn-beta2_rnew_trained-cp3168", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'nombre_caso': "dqn-beta2_rnew_rb-offline-trained-cp1027", # Se utiliza para identificar la carpeta donde se guardan los datos
         'rho': 0.05, # Temperatura: default: 0.25
         'beta': 2, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
@@ -435,7 +437,7 @@ if __name__ == "__main__":
         # TODO: (sven) make these settings unnecessary and get the information
         #  about the env spaces from the client.
         "observation_space": spaces.Box(float("-inf"), float("inf"), (7,)),
-        "action_space": spaces.Discrete(528), # son 5 accionables binarios y su combinatoria es 2^5
+        "action_space": spaces.Discrete(8), # son 5 accionables binarios y su combinatoria es 2^5
         # Use n worker processes to listen on different ports.
         "num_workers": 0,
         # DL framework to use.
@@ -467,7 +469,7 @@ if __name__ == "__main__":
     
     agent = DQNTrainer(config=algo_config)
     
-    checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-15_17-06-55dsydpp0s/checkpoint_003168/checkpoint-3168'
+    checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-18_12-10-41dvxans6t/checkpoint_001027/checkpoint-1027'
 
     agent.restore(checkpoint_path)
 
