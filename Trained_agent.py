@@ -307,28 +307,37 @@ class environment():
 
                 """
                 # Se evalúa el confort higro-térmico
-                if Ti > config['T_SP'] + config['dT_up'] or Ti < config['T_SP'] - config['dT_dn']:
-                    if RHi > config['SP_RH']:
-                        r_temp = - config['rho']*(Ti - config['T_SP'])**2 # penalización por temperatura
-                        r_hr = - config['psi']*(RHi - config['SP_RH'])**2 # penalización por humedad
-                    else:
-                        r_temp = - config['rho']*(Ti - config['T_SP'])**2 # penalización por temperatura
-                        r_hr = config['psi'] * 10 # recompensa por humedad
+                if Ti > (config['T_SP'] + config['dT_up'])+7 or Ti < (config['T_SP'] - config['dT_dn'])-7:
+                    r_temp = -7
+                
+                elif Ti > (config['T_SP'] + config['dT_up'])+6 or Ti < (config['T_SP'] - config['dT_dn'])-6:
+                    r_temp = -6
+                
+                elif Ti > (config['T_SP'] + config['dT_up'])+5 or Ti < (config['T_SP'] - config['dT_dn'])-5:
+                    r_temp = -5
+                
+                elif Ti > (config['T_SP'] + config['dT_up'])+4 or Ti < (config['T_SP'] - config['dT_dn'])-4:
+                    r_temp = -4
+                
+                elif Ti > (config['T_SP'] + config['dT_up'])+3 or Ti < (config['T_SP'] - config['dT_dn'])-3:
+                    r_temp = -3
 
-                elif RHi > config['SP_RH']:
-                    r_temp = config['rho'] * 100 # recompensa por temperatura
-                    r_hr = - config['psi']*(RHi - config['SP_RH'])**2 # penalización por humedad
+                elif Ti > (config['T_SP'] + config['dT_up'])+2 or Ti < (config['T_SP'] - config['dT_dn'])-2:
+                    r_temp = -2
+                
+                elif Ti > (config['T_SP'] + config['dT_up'])+1 or Ti < (config['T_SP'] - config['dT_dn'])-1:
+                    r_temp = -1
 
                 else:
-                    r_temp = config['rho'] * 100 # recompensa por temperatura
-                    r_hr = config['psi'] * 10 # recompensa por humedad
-                # Se evalúa el uso de energía
+                    r_temp = 0
+                
+                
                 if e_tp1 > 0:
                     r_energia = - config['beta']*e_tp1 # penalización por energía
                 else:
-                    r_energia = config['beta'] # recompensa por energía
+                    r_energia = 0
                 
-                r_tp1 = r_energia + r_temp + r_hr
+                r_tp1 = r_energia + r_temp
                 
 
                 if config['first_time_step'] == False:
@@ -399,9 +408,9 @@ config = {'Folder_Output': '',
         'dT_up': 2.5,
         'dT_dn': 2.5,
         'SP_RH': 70.,
-        'nombre_caso': "dqn-r10_trained-cp1975", # Se utiliza para identificar la carpeta donde se guardan los datos
-        'rho': 10, # Temperatura: default: 0.25
-        'beta': 1, # Energía: default: 20
+        'nombre_caso': "dqn-beta2_rnew_trained-cp3168", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'rho': 0.05, # Temperatura: default: 0.25
+        'beta': 2, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
         'first_time_step': True,
         'directorio': '',
@@ -458,7 +467,7 @@ if __name__ == "__main__":
     
     agent = DQNTrainer(config=algo_config)
     
-    checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-13_11-52-59q1xrkpu1/checkpoint_001975/checkpoint-1975'
+    checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-15_17-06-55dsydpp0s/checkpoint_003168/checkpoint-3168'
 
     agent.restore(checkpoint_path)
 
