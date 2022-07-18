@@ -211,7 +211,7 @@ if __name__ == "__main__":
         # TODO: (sven) make these settings unnecessary and get the information
         #  about the env spaces from the client.
         "observation_space": spaces.Box(float("-inf"), float("inf"), (7,)),
-        "action_space": spaces.Discrete(528), # son 5 accionables binarios y su combinatoria es 2^5
+        "action_space": spaces.Discrete(8), # son 5 accionables binarios y su combinatoria es 2^5
         # Use the `PolicyServerInput` to generate experiences.
         "input": _input,
         # Use n worker processes to listen on different ports.
@@ -243,7 +243,7 @@ if __name__ == "__main__":
                     },
                 "timesteps_per_iteration": 100,
                 "n_step": 30, # Tamaño del bache de datos
-                "lr": 0.001,
+                "lr": 0.0001,
             }
         )
         config["model"] = {

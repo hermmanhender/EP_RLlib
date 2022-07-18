@@ -48,6 +48,7 @@ import shutil
 import pandas as pd
 import argparse
 import numpy as np
+import Conventional_controls
 
 from ray.rllib.utils.annotations import PublicAPI
 
@@ -129,32 +130,34 @@ class environment():
         forma local y asigna el momento en el que se hace el intercambio con la función de intercambio
         de información EP_exchange_function.
         """
-        # se establece un estado en el simulador (indispensable)
-        state = api.state_manager.new_state()
-        # se hace un reset del estado en el simulador para borrar cualquier archivo que pueda haber 
-        # quedado en la memoria despues de una ejecución previa (recomendado)
-        api.state_manager.reset_state(state)
-        # se establece el punto de llamado para el intercambio de información con el simulador
-        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, self.EP_exchange_function)
         
-        api.runtime.callback_end_zone_timestep_before_zone_reporting(state, self.EP_exchange_function_final)
-        
-        api.runtime.set_console_output_status(state, False)
         # Se establece un dia random como periodo de duracion del episodio
-        month, day = self.random_run_date(self)
+        # month, day = self.random_run_date(self)
         # Si se quiere definir un periodo determinado, utilizar la siguiente parte del codigo
         """month = 1
         day = 1
         final_month = 1
         final_day = 7"""
-        config['epJSON_file'] = self.episode_epJSON(self, month, day)
-        # se corre el simulador
-        try:
-            api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
-        except:
-            api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
-        # se elimina el estado para evitar posibles errores en la memoria (opcional)(con la versión EP 960
-        # esto arroja error)
+        for month in range(6,13,1):
+            for day in range(1,21,1):
+                # se establece un estado en el simulador (indispensable)
+                state = api.state_manager.new_state()
+                # se hace un reset del estado en el simulador para borrar cualquier archivo que pueda haber 
+                # quedado en la memoria despues de una ejecución previa (recomendado)
+                api.state_manager.reset_state(state)
+                # se establece el punto de llamado para el intercambio de información con el simulador
+                api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, self.EP_exchange_function)
+                
+                api.runtime.callback_end_zone_timestep_before_zone_reporting(state, self.EP_exchange_function_final)
+                
+                api.runtime.set_console_output_status(state, False)
+                
+                config['epJSON_file'] = self.episode_epJSON(self, month, day)
+                # se corre el simulador
+                try:
+                    api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
+                except:
+                    api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
         
 
     @PublicAPI
@@ -371,7 +374,15 @@ class environment():
 
                 """Se obtiene la acción de RLlib"""
                 #print("Se obtiene una acción del agente.")
-                a_tp1 = client.get_action(str(config['episode']), s_cont_tp1)
+                a_tp1_R = 25
+                a_tp1_C = 20
+                a_tp1_p = Conventional_controls.persianas_OnOff(Ti, config['T_SP'], config['dT_up'], config['dT_dn'], Bw, config['a_tp1_p'][config['t']])
+                a_tp1_vn = Conventional_controls.ventana_OnOff2(Ti, To, config['T_SP'], config['dT_up'], config['dT_dn'], RHi, config['SP_RH'], config['a_tp1_vn'][config['t']])
+                a_tp1_vs = Conventional_controls.ventana_OnOff2(Ti, To, config['T_SP'], config['dT_up'], config['dT_dn'], RHi, config['SP_RH'], config['a_tp1_vs'][config['t']])
+                
+                action = a_tp1_p*2**2 + a_tp1_vn*2 + a_tp1_vs + 1
+
+                a_tp1 = client.log_action(str(config['episode']), s_cont_tp1, action)
                 config['a_tp1'].append(a_tp1)
                 
                 """
@@ -389,14 +400,6 @@ class environment():
                 # handle para el control de abertura de la ventana orientada al sur
                 VentS_ControlHandle = api.exchange.get_actuator_handle(state, 'Schedule:File', 'Schedule Value', 'VentS_Control')
                 
-                '''Se transforma la acción seleccionada a una lista de acciones'''
-                
-
-                a_tp1_R = config['action_space']['Cooling SP'][a_tp1]
-                a_tp1_C = config['action_space']['Heating SP'][a_tp1]
-                a_tp1_p = config['action_space']['North Blind'][a_tp1]
-                a_tp1_vn = config['action_space']['North Window'][a_tp1]
-                a_tp1_vs = config['action_space']['South Window'][a_tp1]
                 config['a_tp1_R'].append(a_tp1_R)
                 config['a_tp1_C'].append(a_tp1_C)
                 config['a_tp1_p'].append(a_tp1_p)
