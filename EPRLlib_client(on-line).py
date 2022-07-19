@@ -131,34 +131,32 @@ class environment():
         """
         
         # Se establece un dia random como periodo de duracion del episodio
-        # month, day = self.random_run_date(self)
+        month, day = self.random_run_date_training(self)
         # Si se quiere definir un periodo determinado, utilizar la siguiente parte del codigo
         """month = 1
         day = 1
         final_month = 1
         final_day = 7"""
-        for month in range(1,13,1):
-            for day in range(1,21,1):
-                # se establece un estado en el simulador (indispensable)
-                state = api.state_manager.new_state()
-                # se hace un reset del estado en el simulador para borrar cualquier archivo que pueda haber 
-                # quedado en la memoria despues de una ejecución previa (recomendado)
-                api.state_manager.reset_state(state)
-                # se establece el punto de llamado para el intercambio de información con el simulador
-                api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, self.EP_exchange_function)
-                
-                api.runtime.callback_end_zone_timestep_before_zone_reporting(state, self.EP_exchange_function_final)
-                
-                api.runtime.set_console_output_status(state, False)
-                
-                config['epJSON_file'] = self.episode_epJSON(self, month, day)
-                # se corre el simulador
-                try:
-                    api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
-                except:
-                    api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
-                
-                api.state_manager.reset_state(state)
+        # se establece un estado en el simulador (indispensable)
+        state = api.state_manager.new_state()
+        # se hace un reset del estado en el simulador para borrar cualquier archivo que pueda haber 
+        # quedado en la memoria despues de una ejecución previa (recomendado)
+        api.state_manager.reset_state(state)
+        # se establece el punto de llamado para el intercambio de información con el simulador
+        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(state, self.EP_exchange_function)
+        
+        api.runtime.callback_end_zone_timestep_before_zone_reporting(state, self.EP_exchange_function_final)
+        
+        api.runtime.set_console_output_status(state, False)
+        
+        config['epJSON_file'] = self.episode_epJSON(self, month, day)
+        # se corre el simulador
+        try:
+            api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
+        except:
+            api.runtime.run_energyplus(state, ['-d', config['Folder_Output'], '-w', config['Weather_file'], config['epJSON_file']])
+        
+        api.state_manager.reset_state(state)
         
 
     @PublicAPI
@@ -170,6 +168,30 @@ class environment():
             day = int(np.random.randint(1, 29, 1))
         else:
             day = int(np.random.randint(1, 31, 1))
+
+        return month, day
+
+    @PublicAPI
+    def random_run_date_training(self):
+        month = int(np.random.randint(1, 13, 1))
+        if month == 1 or month == 3 or month == 5 or month == 7 or month == 8 or month == 10 or month == 12:
+            day = int(np.random.randint(1, 21, 1))
+        elif month == 2:
+            day = int(np.random.randint(1, 21, 1))
+        else:
+            day = int(np.random.randint(1, 21, 1))
+
+        return month, day
+
+    @PublicAPI
+    def random_run_date_test(self):
+        month = int(np.random.randint(1, 13, 1))
+        if month == 1 or month == 3 or month == 5 or month == 7 or month == 8 or month == 10 or month == 12:
+            day = int(np.random.randint(21, 32, 1))
+        elif month == 2:
+            day = int(np.random.randint(21, 29, 1))
+        else:
+            day = int(np.random.randint(21, 31, 1))
 
         return month, day
 
@@ -614,7 +636,7 @@ if __name__ == "__main__":
     environment()
 
     n = 0
-    while n < 102:
+    while n < 1002:
         print("\nEpisode "+ str(n+1))
         environment.run(environment)
         n += 1
