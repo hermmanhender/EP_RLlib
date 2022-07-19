@@ -4,6 +4,7 @@
 !-NOTE: All comments with '!-' are ignored by the IDFEditor and are generated automatically.
 !-      Use '!' comments if they need to be retained when using the IDFEditor.
 
+
 WindowMaterial:Gas,
     aire_ventana,            !- Name
     Air,                     !- Gas Type
@@ -15,6 +16,10 @@ InternalMass,
     Thermal Zone: Modelo_Simple,  !- Zone or ZoneList Name
     ,                        !- Space or SpaceList Name
     5;                       !- Surface Area {m2}
+
+Construction,
+    Internal Mass,           !- Name
+    Ladrillo;                !- Outside Layer
 
 ThermostatSetpoint:DualSetpoint,
     Dual_temp_sp,            !- Name
@@ -154,7 +159,9 @@ Output:Variable,*,Zone Air Relative Humidity,Timestep;
 Construction,
     Ventana_Sombra,          !- Name
     Window Material Blind 1, !- Outside Layer
-    Clear 3mm;               !- Layer 2
+    Clear 3mm,               !- Layer 2
+    aire_ventana,            !- Layer 3
+    Clear 3mm;               !- Layer 4
 
 WindowShadingControl,
     ShadingControl,          !- Name
@@ -313,7 +320,9 @@ Schedule:Compact,
 
 Construction,
     Ventana,                 !- Name
-    Clear 3mm;               !- Outside Layer
+    Clear 3mm,               !- Outside Layer
+    aire_ventana,            !- Layer 2
+    Clear 3mm;               !- Layer 3
 
 Material,
     Rev_int,                 !- Name
@@ -406,14 +415,16 @@ Material,
 Construction,
     Muros,                   !- Name
     Rev_ext,                 !- Outside Layer
-    Ladrillo,                !- Layer 2
-    Rev_int;                 !- Layer 3
+    Poliestireno_5cm,        !- Layer 2
+    Ladrillo,                !- Layer 3
+    Rev_int;                 !- Layer 4
 
 Construction,
     Techo,                   !- Name
     Membrana_Gtxt,           !- Outside Layer
     Poliestireno_5cm,        !- Layer 2
-    LosaHA;                  !- Layer 3
+    Poliestireno_5cm,        !- Layer 3
+    LosaHA;                  !- Layer 4
 
 Construction,
     Piso,                    !- Name
