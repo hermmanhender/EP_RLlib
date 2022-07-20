@@ -109,7 +109,7 @@ class environment():
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
         #output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]
-        output = [('episode', 'hour', 'rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
+        output = [('episode', 'time_step', 'hour', 'rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
         #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
         #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_comp.csv', mode="w", index=False, header=False)
         pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
@@ -289,7 +289,7 @@ class environment():
                 RHi = api.exchange.get_variable_value(state, RHi_handle)
                 
                 # the values are saved in a dictionary to compose the observation (or state)
-                s_cont_tp1 = [hour, rad, Bw, To, Ti, v, d, RHi]
+                s_cont_tp1 = [time_step, hour, rad, Bw, To, Ti, v, d, RHi]
                 config['last_observation'] = s_cont_tp1
 
                 """
@@ -400,7 +400,7 @@ class environment():
                 SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                 """
                 if config['first_time_step'] == False:
-                    output = [(config['episode'], hour, rad, Bw, To, Ti, v, d, RHi, config['a_tp1'][config['t']], config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
+                    output = [(config['episode'], time_step, hour, rad, Bw, To, Ti, v, d, RHi, config['a_tp1'][config['t']], config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
                     #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="a", index=False, header=False)
                 
 
@@ -518,7 +518,7 @@ class environment():
                 RHi = api.exchange.get_variable_value(state, RHi_handle)
                 
                 # the values are saved in a dictionary to compose the observation (or state)
-                s_cont_tp1 = [hour, rad, Bw, To, Ti, v, d, RHi]
+                s_cont_tp1 = [time_step, hour, rad, Bw, To, Ti, v, d, RHi]
                 config['last_observation'] = s_cont_tp1
 
                 """

@@ -105,7 +105,7 @@ class environment():
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
-        output = [('episode', 'hour', 'rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
+        output = [('episode', 'time_step', 'hour', 'rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
         pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
 
         config['Folder_Output'] = config['directorio']
@@ -270,7 +270,7 @@ class environment():
                 RHi = api.exchange.get_variable_value(state, RHi_handle)
                 
                 # the values are saved in a dictionary to compose the observation (or state)
-                s_cont_tp1 = [hour, rad, Bw, To, Ti, v, d, RHi]
+                s_cont_tp1 = [time_step, hour, rad, Bw, To, Ti, v, d, RHi]
                 config['last_observation'] = s_cont_tp1
 
                 """
@@ -378,7 +378,7 @@ class environment():
                 a_tp1 = 0
 
                 if config['first_time_step'] == False:
-                    output = [(config['episode'], hour, rad, Bw, To, Ti, v, d, RHi, a_tp1, config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
+                    output = [(config['episode'], time_step, hour, rad, Bw, To, Ti, v, d, RHi, a_tp1, config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
                     pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="a", index=False, header=False)
                 
                 if config['first_time_step'] == True:
