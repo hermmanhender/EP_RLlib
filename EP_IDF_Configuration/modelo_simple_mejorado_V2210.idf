@@ -4,11 +4,10 @@
 !-NOTE: All comments with '!-' are ignored by the IDFEditor and are generated automatically.
 !-      Use '!' comments if they need to be retained when using the IDFEditor.
 
-
 WindowMaterial:Gas,
     aire_ventana,            !- Name
     Air,                     !- Gas Type
-    0.12;                    !- Thickness {m}
+    0.012;                   !- Thickness {m}
 
 InternalMass,
     internal_mass,           !- Name

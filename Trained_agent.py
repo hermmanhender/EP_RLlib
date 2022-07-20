@@ -94,7 +94,7 @@ class environment():
             print("Se ha creado el directorio: %s " % config['directorio'])
 
         # Para versión 2210
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_V2210.epJSON', config['directorio'] + '/Resultados/modelo_simple.epJSON')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_mejorado_V2210.epJSON', config['directorio'] + '/Resultados/modelo_simple.epJSON')
         shutil.copy(config['ruta_base'] + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', config['directorio'] + '/Resultados/Observatorio-hour_2.epw')
 
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
@@ -103,17 +103,17 @@ class environment():
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
 
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/action_space_red.csv', config['directorio'] + '/Resultados/action_space_red.csv')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/action_space.csv', config['directorio'] + '/Resultados/action_space.csv')
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
-        output = [('episode','rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
+        output = [('episode', 'hour', 'rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
         pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
 
         config['Folder_Output'] = config['directorio']
         config['Weather_file'] = config['directorio'] + '/Resultados/Observatorio-hour_2.epw'
         config['epJSON_file'] = config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON'
 
-        config.update({'action_space': pd.read_csv(config['directorio'] + '/Resultados/action_space_red.csv')})
+        config.update({'action_space': pd.read_csv(config['directorio'] + '/Resultados/action_space.csv')})
 
     @PublicAPI
     def run(self):
@@ -274,7 +274,7 @@ class environment():
                 RHi = api.exchange.get_variable_value(state, RHi_handle)
                 
                 # the values are saved in a dictionary to compose the observation (or state)
-                s_cont_tp1 = [rad, Bw, To, Ti, v, d, RHi]
+                s_cont_tp1 = [hour, rad, Bw, To, Ti, v, d, RHi]
                 config['last_observation'] = s_cont_tp1
 
                 """
@@ -317,10 +317,22 @@ class environment():
                 print("PPD: " + str(PPD_v))
                 
                 """
+                # Se establece el schedule de confort
+                if hour <= 7 or hour >= 23:
+                    T_dn = config['T_SP'] - config['dT_dn'] - 3 # T_dn = 22.5 - 2.5 - 3
+                    T_up = config['T_SP'] + config['dT_up'] + 3 # T_up = 22.5 + 2.5 - 3
+                
+                elif hour > 7 and hour < 23:
+                    T_dn = config['T_SP'] - config['dT_dn']
+                    T_up = config['T_SP'] + config['dT_up']
+
+                else:
+                    print("Error en la hora calculada.")
+                
                 # Minutes comfort calculation
-                if Ti > (config["T_SP"] + config['dT_up']) or Ti < (config["T_SP"] - config['dT_dn']): # or RHi > config['SP_RH']:
+                if Ti > T_up or Ti < T_dn: # or RHi > config['SP_RH']:
                     c_tp1 = 0
-                elif Ti <= (config["T_SP"] + config['dT_up']) or Ti >= (config["T_SP"] - config['dT_dn']): # or RHi <= config['SP_RH']:
+                elif Ti <= T_up or Ti >= T_dn: # or RHi <= config['SP_RH']:
                     c_tp1 = 60/num_time_steps_in_hour
                 else:
                     print("Comfort not founded.")
@@ -332,25 +344,25 @@ class environment():
 
                 """
                 # Se evalúa el confort higro-térmico
-                if Ti > (config['T_SP'] + config['dT_up'])+7 or Ti < (config['T_SP'] - config['dT_dn'])-7:
+                if Ti > (T_up)+7 or Ti < (T_dn)-7:
                     r_temp = -7
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+6 or Ti < (config['T_SP'] - config['dT_dn'])-6:
+                elif Ti > (T_up)+6 or Ti < (T_dn)-6:
                     r_temp = -6
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+5 or Ti < (config['T_SP'] - config['dT_dn'])-5:
+                elif Ti > (T_up)+5 or Ti < (T_dn)-5:
                     r_temp = -5
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+4 or Ti < (config['T_SP'] - config['dT_dn'])-4:
+                elif Ti > (T_up)+4 or Ti < (T_dn)-4:
                     r_temp = -4
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+3 or Ti < (config['T_SP'] - config['dT_dn'])-3:
+                elif Ti > (T_up)+3 or Ti < (T_dn)-3:
                     r_temp = -3
 
-                elif Ti > (config['T_SP'] + config['dT_up'])+2 or Ti < (config['T_SP'] - config['dT_dn'])-2:
+                elif Ti > (T_up)+2 or Ti < (T_dn)-2:
                     r_temp = -2
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+1 or Ti < (config['T_SP'] - config['dT_dn'])-1:
+                elif Ti > (T_up)+1 or Ti < (T_dn)-1:
                     r_temp = -1
 
                 else:
@@ -366,7 +378,7 @@ class environment():
                 
 
                 if config['first_time_step'] == False:
-                    output = [(config['episode'], rad, Bw, To, Ti, v, d, RHi, config['a_tp1'][config['t']], config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
+                    output = [(config['episode'], hour, rad, Bw, To, Ti, v, d, RHi, config['a_tp1'][config['t']], config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
                     pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="a", index=False, header=False)
                 
                 if config['first_time_step'] == True:
@@ -395,8 +407,8 @@ class environment():
                 '''Se transforma la acción seleccionada a una lista de acciones'''
                 
 
-                a_tp1_R = 25
-                a_tp1_C = 20
+                a_tp1_R = config['action_space']['Cooling SP'][a_tp1]
+                a_tp1_C = config['action_space']['Heating SP'][a_tp1]
                 a_tp1_p = config['action_space']['North Blind'][a_tp1]
                 a_tp1_vn = config['action_space']['North Window'][a_tp1]
                 a_tp1_vs = config['action_space']['South Window'][a_tp1]
@@ -433,7 +445,7 @@ config = {'Folder_Output': '',
         'dT_up': 2.5,
         'dT_dn': 2.5,
         'SP_RH': 70.,
-        'nombre_caso': "dqn-beta2_rnew_rb-offline-trained-cp1704", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'nombre_caso': "dqn_m-beta2_rnew_rb-offline-trained-cp760", # Se utiliza para identificar la carpeta donde se guardan los datos
         'rho': 0.05, # Temperatura: default: 0.25
         'beta': 2, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
@@ -459,8 +471,8 @@ if __name__ == "__main__":
         "env": None,
         # TODO: (sven) make these settings unnecessary and get the information
         #  about the env spaces from the client.
-        "observation_space": spaces.Box(float("-inf"), float("inf"), (7,)),
-        "action_space": spaces.Discrete(8), # son 5 accionables binarios y su combinatoria es 2^5
+        "observation_space": spaces.Box(float("-inf"), float("inf"), (8,)),
+        "action_space": spaces.Discrete(528), # son 5 accionables binarios y su combinatoria es 2^5
         # Use n worker processes to listen on different ports.
         "num_workers": 0,
         # DL framework to use.
@@ -492,7 +504,7 @@ if __name__ == "__main__":
     
     agent = DQNTrainer(config=algo_config)
     
-    checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-18_16-01-20l9orly_6/checkpoint_001704/checkpoint-1704'
+    checkpoint_path = 'C:/Users/grhen/ray_results/DQNTrainer_None_2022-07-19_20-05-18ejebwxdu/checkpoint_000760/checkpoint-760'
 
     agent.restore(checkpoint_path)
 

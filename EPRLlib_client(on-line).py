@@ -96,7 +96,7 @@ class environment():
             print("Se ha creado el directorio: %s " % config['directorio'])
 
         # Para versión 2210
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_V2210.epJSON', config['directorio'] + '/Resultados/modelo_simple.epJSON')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_mejorado_V2210.epJSON', config['directorio'] + '/Resultados/modelo_simple.epJSON')
         shutil.copy(config['ruta_base'] + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', config['directorio'] + '/Resultados/Observatorio-hour_2.epw')
 
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
@@ -105,11 +105,11 @@ class environment():
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentS_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentS_Aviability_Sch_0.csv')
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
 
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/action_space_red.csv', config['directorio'] + '/Resultados/action_space_red.csv')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/action_space.csv', config['directorio'] + '/Resultados/action_space.csv')
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
         #output = [('simulacion_n', 'lr', 'gamma', 'qA', 'qS', 'Q_value', 'beta', 'rho', 'SP_temp', 'dT_up', 'dT_dn', 'n_episodios', 'power', 'eps', 'eps_decay', 'timestep_random', 'total_rew', 'total_ener', 'total_conf')]
-        output = [('rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
+        output = [('episode', 'hour', 'rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
         #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
         #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_comp.csv', mode="w", index=False, header=False)
         pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_prop.csv', mode="w", index=False, header=False)
@@ -120,7 +120,7 @@ class environment():
         config['Weather_file'] = config['directorio'] + '/Resultados/Observatorio-hour_2.epw'
         config['epJSON_file'] = config['directorio'] + '/Resultados/modelo_simple_vent_m.epJSON'
 
-        config.update({'action_space': pd.read_csv(config['directorio'] + '/Resultados/action_space_red.csv')})
+        config.update({'action_space': pd.read_csv(config['directorio'] + '/Resultados/action_space.csv')})
 
     @PublicAPI
     def run(self):
@@ -289,7 +289,7 @@ class environment():
                 RHi = api.exchange.get_variable_value(state, RHi_handle)
                 
                 # the values are saved in a dictionary to compose the observation (or state)
-                s_cont_tp1 = [rad, Bw, To, Ti, v, d, RHi]
+                s_cont_tp1 = [hour, rad, Bw, To, Ti, v, d, RHi]
                 config['last_observation'] = s_cont_tp1
 
                 """
@@ -332,10 +332,22 @@ class environment():
                 print("PPD: " + str(PPD_v))
                 
                 """
+                # Se establece el schedule de confort
+                if hour <= 7 or hour >= 23:
+                    T_dn = config['T_SP'] - config['dT_dn'] - 3 # T_dn = 22.5 - 2.5 - 3
+                    T_up = config['T_SP'] + config['dT_up'] + 3 # T_up = 22.5 + 2.5 - 3
+                
+                elif hour > 7 and hour < 23:
+                    T_dn = config['T_SP'] - config['dT_dn']
+                    T_up = config['T_SP'] + config['dT_up']
+
+                else:
+                    print("Error en la hora calculada.")
+                
                 # Minutes comfort calculation
-                if Ti > (config["T_SP"] + config['dT_up']) or Ti < (config["T_SP"] - config['dT_dn']): # or RHi > config['SP_RH']:
+                if Ti > T_up or Ti < T_dn: # or RHi > config['SP_RH']:
                     c_tp1 = 0
-                elif Ti <= (config["T_SP"] + config['dT_up']) or Ti >= (config["T_SP"] - config['dT_dn']): # or RHi <= config['SP_RH']:
+                elif Ti <= T_up or Ti >= T_dn: # or RHi <= config['SP_RH']:
                     c_tp1 = 60/num_time_steps_in_hour
                 else:
                     print("Comfort not founded.")
@@ -347,25 +359,25 @@ class environment():
 
                 """
                 # Se evalúa el confort higro-térmico
-                if Ti > (config['T_SP'] + config['dT_up'])+7 or Ti < (config['T_SP'] - config['dT_dn'])-7:
+                if Ti > (T_up)+7 or Ti < (T_dn)-7:
                     r_temp = -7
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+6 or Ti < (config['T_SP'] - config['dT_dn'])-6:
+                elif Ti > (T_up)+6 or Ti < (T_dn)-6:
                     r_temp = -6
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+5 or Ti < (config['T_SP'] - config['dT_dn'])-5:
+                elif Ti > (T_up)+5 or Ti < (T_dn)-5:
                     r_temp = -5
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+4 or Ti < (config['T_SP'] - config['dT_dn'])-4:
+                elif Ti > (T_up)+4 or Ti < (T_dn)-4:
                     r_temp = -4
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+3 or Ti < (config['T_SP'] - config['dT_dn'])-3:
+                elif Ti > (T_up)+3 or Ti < (T_dn)-3:
                     r_temp = -3
 
-                elif Ti > (config['T_SP'] + config['dT_up'])+2 or Ti < (config['T_SP'] - config['dT_dn'])-2:
+                elif Ti > (T_up)+2 or Ti < (T_dn)-2:
                     r_temp = -2
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+1 or Ti < (config['T_SP'] - config['dT_dn'])-1:
+                elif Ti > (T_up)+1 or Ti < (T_dn)-1:
                     r_temp = -1
 
                 else:
@@ -388,7 +400,7 @@ class environment():
                 SE GRABAN LAS VARIABLES PARA EL TIEMPO t
                 """
                 if config['first_time_step'] == False:
-                    output = [(config['episode'], rad, Bw, To, Ti, v, d, RHi, config['a_tp1'][config['t']], config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
+                    output = [(config['episode'], hour, rad, Bw, To, Ti, v, d, RHi, config['a_tp1'][config['t']], config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
                     #pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="a", index=False, header=False)
                 
 
@@ -418,8 +430,8 @@ class environment():
                 '''Se transforma la acción seleccionada a una lista de acciones'''
                 
 
-                a_tp1_R = 25
-                a_tp1_C = 20
+                a_tp1_R = config['action_space']['Cooling SP'][a_tp1]
+                a_tp1_C = config['action_space']['Heating SP'][a_tp1]
                 a_tp1_p = config['action_space']['North Blind'][a_tp1]
                 a_tp1_vn = config['action_space']['North Window'][a_tp1]
                 a_tp1_vs = config['action_space']['South Window'][a_tp1]
@@ -506,7 +518,7 @@ class environment():
                 RHi = api.exchange.get_variable_value(state, RHi_handle)
                 
                 # the values are saved in a dictionary to compose the observation (or state)
-                s_cont_tp1 = [rad, Bw, To, Ti, v, d, RHi]
+                s_cont_tp1 = [hour, rad, Bw, To, Ti, v, d, RHi]
                 config['last_observation'] = s_cont_tp1
 
                 """
@@ -523,25 +535,36 @@ class environment():
                 e_tp1 = (abs(q_R) + abs(q_C))/(3.6*1000000)
                 
                 # Se evalúa el confort higro-térmico
-                if Ti > (config['T_SP'] + config['dT_up'])+7 or Ti < (config['T_SP'] - config['dT_dn'])-7:
+                if hour <= 7 or hour >= 23:
+                    T_dn = config['T_SP'] - config['dT_dn'] - 3 # T_dn = 22.5 - 2.5 - 3
+                    T_up = config['T_SP'] + config['dT_up'] + 3 # T_up = 22.5 + 2.5 - 3
+                
+                elif hour > 7 and hour < 23:
+                    T_dn = config['T_SP'] - config['dT_dn']
+                    T_up = config['T_SP'] + config['dT_up']
+
+                else:
+                    print("Error en la hora calculada.")
+                    
+                if Ti > (T_up)+7 or Ti < (T_dn)-7:
                     r_temp = -7
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+6 or Ti < (config['T_SP'] - config['dT_dn'])-6:
+                elif Ti > (T_up)+6 or Ti < (T_dn)-6:
                     r_temp = -6
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+5 or Ti < (config['T_SP'] - config['dT_dn'])-5:
+                elif Ti > (T_up)+5 or Ti < (T_dn)-5:
                     r_temp = -5
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+4 or Ti < (config['T_SP'] - config['dT_dn'])-4:
+                elif Ti > (T_up)+4 or Ti < (T_dn)-4:
                     r_temp = -4
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+3 or Ti < (config['T_SP'] - config['dT_dn'])-3:
+                elif Ti > (T_up)+3 or Ti < (T_dn)-3:
                     r_temp = -3
 
-                elif Ti > (config['T_SP'] + config['dT_up'])+2 or Ti < (config['T_SP'] - config['dT_dn'])-2:
+                elif Ti > (T_up)+2 or Ti < (T_dn)-2:
                     r_temp = -2
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+1 or Ti < (config['T_SP'] - config['dT_dn'])-1:
+                elif Ti > (T_up)+1 or Ti < (T_dn)-1:
                     r_temp = -1
 
                 else:

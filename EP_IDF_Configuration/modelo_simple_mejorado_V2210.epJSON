@@ -1003,7 +1003,7 @@
     "WindowMaterial:Gas": {
         "aire_ventana": {
             "gas_type": "Air",
-            "thickness": 0.12
+            "thickness": 0.012
         }
     },
     "WindowMaterial:Glazing": {

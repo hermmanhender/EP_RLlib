@@ -175,3 +175,17 @@ def ventana_OnOff2(Ti, To, SP_temp, dT_up, dT_dn, RHi, RH_SP, action_v):
         action_v = -1
     
     return action_v
+
+###########################################################################################################################
+
+def temperature_schedule(hora):
+
+    if hora <= 7 or hora >= 23:
+        Theat = 17
+        Tchill = 28
+    
+    elif hora > 7 and hora < 23:
+        Theat = 20
+        Tchill = 25
+
+    return Theat, Tchill

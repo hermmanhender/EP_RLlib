@@ -1,0 +1,25 @@
+Program Version,EnergyPlus, Version 22.1.0-ed759b17ee, YMD=2022.07.19 11:55,
+   ************* Successfully added path "C:\\Users\\grhen\\Documents\\GitHub\\EP_RLlib\\EP_IDF_Configuration" to the sys.path in Python
+   ** Warning ** Standard Time Meridian and Time Zone differ by more than 1, Difference="2.0"
+   **   ~~~   ** Solar Positions may be incorrect
+   ** Warning ** GetHTSurfaceData: Surfaces with interface to Ground found but no "Ground Temperatures" were input.
+   **   ~~~   ** Found first in surface=PISO
+   **   ~~~   ** Defaults, constant throughout the year of (18.0) will be used.
+   ************* Testing Individual Branch Integrity
+   ************* All Branches passed integrity testing
+   ************* Testing Individual Supply Air Path Integrity
+   ************* All Supply Air Paths passed integrity testing
+   ************* Testing Individual Return Air Path Integrity
+   ************* All Return Air Paths passed integrity testing
+   ************* No node connection errors were found.
+   ************* Beginning Simulation
+   ************* Simulation Error Summary *************
+   ************* There are 4 unused objects in input.
+   ************* Use Output:Diagnostics,DisplayUnusedObjects; to see them.
+   ************* There are 2 unused schedules in input.
+   ************* There are 730 unused week schedules in input.
+   ************* There are 730 unused day schedules in input.
+   ************* Use Output:Diagnostics,DisplayUnusedSchedules; to see them.
+   ************* EnergyPlus Warmup Error Summary. During Warmup: 0 Warning; 0 Severe Errors.
+   ************* EnergyPlus Sizing Error Summary. During Sizing: 0 Warning; 0 Severe Errors.
+   ************* EnergyPlus Completed Successfully-- 2 Warning; 0 Severe Errors; Elapsed Time=00hr 00min  0.53sec

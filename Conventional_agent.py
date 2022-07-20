@@ -36,6 +36,7 @@ In either case, the user of PolicyClient must:
 """
 
 import sys
+from xmlrpc.client import TRANSPORT_ERROR
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/EP_RLlib')
 sys.path.insert(0, 'C:/EnergyPlusV22-1-0')
 from pyenergyplus.api import EnergyPlusAPI
@@ -94,7 +95,7 @@ class environment():
         else:
             print("Se ha creado el directorio: %s " % config['directorio'])
 
-        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_V2210.epJSON', config['directorio'] + '/Resultados/modelo_simple.epJSON')
+        shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/modelo_simple_mejorado_V2210.epJSON', config['directorio'] + '/Resultados/modelo_simple.epJSON')
         shutil.copy(config['ruta_base'] + '/EP_Wheater_Configuration/Observatorio-hour_2.epw', config['directorio'] + '/Resultados/Observatorio-hour_2.epw')
 
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/RL_Control_Sch_0.csv', config['directorio'] + '/Resultados/RL_Control_Sch_0.csv')
@@ -104,7 +105,7 @@ class environment():
         shutil.copy(config['ruta_base'] + '/EP_IDF_Configuration/VentN_Aviability_Sch_0.csv', config['directorio'] + '/Resultados/VentN_Aviability_Sch_0.csv')
 
         '''Se establece una etiqueta para identificar los parametros con los que se simulo el experimento'''
-        output = [('episode','rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
+        output = [('episode', 'hour', 'rad', 'Bw', 'To', 'Ti', 'v', 'd', 'RHi', 'a', 'a_tp1_R', 'a_tp1_C', 'a_tp1_p', 'a_tp1_vn', 'a_tp1_vs', 'total_rew', 'total_ener', 'total_conf')]
         pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="w", index=False, header=False)
 
         config['Folder_Output'] = config['directorio']
@@ -269,7 +270,7 @@ class environment():
                 RHi = api.exchange.get_variable_value(state, RHi_handle)
                 
                 # the values are saved in a dictionary to compose the observation (or state)
-                s_cont_tp1 = [rad, Bw, To, Ti, v, d, RHi]
+                s_cont_tp1 = [hour, rad, Bw, To, Ti, v, d, RHi]
                 config['last_observation'] = s_cont_tp1
 
                 """
@@ -312,10 +313,22 @@ class environment():
                 print("PPD: " + str(PPD_v))
                 
                 """
+                # Se establece el schedule de confort
+                if hour <= 7 or hour >= 23:
+                    T_dn = config['T_SP'] - config['dT_dn'] - 3 # T_dn = 22.5 - 2.5 - 3
+                    T_up = config['T_SP'] + config['dT_up'] + 3 # T_up = 22.5 + 2.5 - 3
+                
+                elif hour > 7 and hour < 23:
+                    T_dn = config['T_SP'] - config['dT_dn']
+                    T_up = config['T_SP'] + config['dT_up']
+
+                else:
+                    print("Error en la hora calculada.")
+                
                 # Minutes comfort calculation
-                if Ti > (config["T_SP"] + config['dT_up']) or Ti < (config["T_SP"] - config['dT_dn']): # or RHi > config['SP_RH']:
+                if Ti > T_up or Ti < T_dn: # or RHi > config['SP_RH']:
                     c_tp1 = 0
-                elif Ti <= (config["T_SP"] + config['dT_up']) or Ti >= (config["T_SP"] - config['dT_dn']): # or RHi <= config['SP_RH']:
+                elif Ti <= T_up or Ti >= T_dn: # or RHi <= config['SP_RH']:
                     c_tp1 = 60/num_time_steps_in_hour
                 else:
                     print("Comfort not founded.")
@@ -327,25 +340,25 @@ class environment():
 
                 """
                 # Se evalúa el confort higro-térmico
-                if Ti > (config['T_SP'] + config['dT_up'])+7 or Ti < (config['T_SP'] - config['dT_dn'])-7:
+                if Ti > (T_up)+7 or Ti < (T_dn)-7:
                     r_temp = -7
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+6 or Ti < (config['T_SP'] - config['dT_dn'])-6:
+                elif Ti > (T_up)+6 or Ti < (T_dn)-6:
                     r_temp = -6
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+5 or Ti < (config['T_SP'] - config['dT_dn'])-5:
+                elif Ti > (T_up)+5 or Ti < (T_dn)-5:
                     r_temp = -5
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+4 or Ti < (config['T_SP'] - config['dT_dn'])-4:
+                elif Ti > (T_up)+4 or Ti < (T_dn)-4:
                     r_temp = -4
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+3 or Ti < (config['T_SP'] - config['dT_dn'])-3:
+                elif Ti > (T_up)+3 or Ti < (T_dn)-3:
                     r_temp = -3
 
-                elif Ti > (config['T_SP'] + config['dT_up'])+2 or Ti < (config['T_SP'] - config['dT_dn'])-2:
+                elif Ti > (T_up)+2 or Ti < (T_dn)-2:
                     r_temp = -2
                 
-                elif Ti > (config['T_SP'] + config['dT_up'])+1 or Ti < (config['T_SP'] - config['dT_dn'])-1:
+                elif Ti > (T_up)+1 or Ti < (T_dn)-1:
                     r_temp = -1
 
                 else:
@@ -365,15 +378,16 @@ class environment():
                 a_tp1 = 0
 
                 if config['first_time_step'] == False:
-                    output = [(config['episode'], rad, Bw, To, Ti, v, d, RHi, a_tp1, config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
+                    output = [(config['episode'], hour, rad, Bw, To, Ti, v, d, RHi, a_tp1, config['a_tp1_R'][config['t']], config['a_tp1_C'][config['t']], config['a_tp1_p'][config['t']], config['a_tp1_vn'][config['t']], config['a_tp1_vs'][config['t']], r_tp1, e_tp1, c_tp1)]
                     pd.DataFrame(output).to_csv(config['directorio'] + '/Resultados/output_conv.csv', mode="a", index=False, header=False)
                 
                 if config['first_time_step'] == True:
                     config['first_time_step'] = False
 
                 """Se obtiene la acción Convencional"""
-                a_tp1_R = 25
-                a_tp1_C = 20
+                T_C, T_R = Conventional_controls.temperature_schedule(hour)
+                a_tp1_R = T_R
+                a_tp1_C = T_C
                 a_tp1_p = Conventional_controls.persianas_OnOff(Ti, config['T_SP'], config['dT_up'], config['dT_dn'], Bw, config['a_tp1_p'][config['t']])
                 a_tp1_vn = Conventional_controls.ventana_OnOff2(Ti, To, config['T_SP'], config['dT_up'], config['dT_dn'], RHi, config['SP_RH'], config['a_tp1_vn'][config['t']])
                 a_tp1_vs = Conventional_controls.ventana_OnOff2(Ti, To, config['T_SP'], config['dT_up'], config['dT_dn'], RHi, config['SP_RH'], config['a_tp1_vs'][config['t']])
@@ -429,7 +443,7 @@ config = {'Folder_Output': '',
         'dT_up': 2.5,
         'dT_dn': 2.5,
         'SP_RH': 70.,
-        'nombre_caso': "rb-beta2_rnew", # Se utiliza para identificar la carpeta donde se guardan los datos
+        'nombre_caso': "rb_m-beta2_rnew", # Se utiliza para identificar la carpeta donde se guardan los datos
         'rho': 0.05, # Temperatura: default: 0.25
         'beta': 2, # Energía: default: 20
         'psi': 0, # Humedad relativa: default: 0.005
